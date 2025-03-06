@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>创作界面(开发中)</title>
+  <style>
+     /* 全局样式 */
+     :root {
+      --paper-color: #f5eedc;
+      --ink-color: #3a3226;
+      --accent-color: #8b572a;
+      --warning-color: #c0392b;
+    }
+
+    body {
+      font-family: 'Noto Serif SC', serif;
+      margin: 0;
+      padding: 0;
+      background: url('https://www.transparenttextures.com/patterns/cream-paper.png') var(--paper-color);
+      color: var(--ink-color);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #app {
+      flex: 1; /* 让内容区域填充剩余空间 */
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 头部样式 */
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 0.5rem; /* 缩小头部高度 */
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(58, 50, 38, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      transition: opacity 0.3s ease;
+      opacity: 0;
+    }
+
+    .header.show {
+      opacity: 1;
+    }
+
+    .back-button {
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: var(--accent-color);
+      transition: transform 0.2s ease;
+    }
+
+    .back-button:hover {
+      transform: translateX(-3px);
+    }
+
+    .title {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: rgba(58, 50, 38, 0.8);
+    }
+
+    .publish-button {
+      background: var(--accent-color);
+      color: var(--paper-color);
+      padding: 0.3rem 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 6px rgba(139, 87, 42, 0.2);
+    }
+
+    .publish-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(139, 87, 42, 0.3);
+    }
+
+    /* 内容区域 */
+    .content {
+      padding: 0 1rem;
+      max-width: 800px;
+      margin: 0 auto;
+      flex-grow: 1;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: var(--accent-color);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-title::before {
+      content: "✎";
+      font-size: 1.2em;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 0.75rem;
+      border: none;
+      border-bottom: 2px solid rgba(139, 87, 42, 0.2);
+      background: transparent;
+      font-family: inherit;
+      font-size: 1.1rem;
+      transition: border-color 0.3s ease;
+      margin-bottom: 1rem;
+      box-sizing: border-box;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: var(--accent-color);
+    }
+
+    /* 正文编辑器 */
+    .editor-container {
+      margin-top: 1rem;
+    }
+
+    #content-textarea {
+      width: 100%;
+      height: auto;
+      min-height: 400px;
+      padding: 0.75rem;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 1.1rem;
+      line-height: 1.8;
+      resize: none;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    #content-textarea:focus {
+      box-shadow: none;
+      outline: none;
+    }
+
+    /* 字数统计 */
+    .word-counter {
+      position: relative;
+      text-align: right;
+      padding: 0.5rem 0;
+      color: rgba(58, 50, 38, 0.8);
+      font-size: 0.9rem;
+    }
+
+    /* 底部导航 */
+    .bottom-nav {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 0.1rem; /* 减少底部导航栏高度 */
+      display: flex;
+      justify-content: space-around;
+      box-shadow: 0 -2px 5px rgba(58, 50, 38, 0.1);
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      backdrop-filter: blur(1px);
+      box-sizing: border-box;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.20rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 0.1rem 0.3rem; /* 缩小导航按钮 */
+      border-radius: 4px;
+    }
+
+    .nav-item:hover {
+      background: rgba(139, 87, 42, 0.05);
+    }
+
+    .nav-item i {
+      font-size: 1.2rem; /* 缩小图标 */
+      color: var(--accent-color);
+    }
+
+    .nav-item span {
+      font-size: 0.7rem; /* 缩小文字 */
+      color: var(--ink-color);
+    }
+
+    /* 弹窗样式 */
+    .popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(58, 50, 38, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .popup-content {
+      background: var(--paper-color);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(58, 50, 38, 0.2);
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .popup-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .popup-button {
+      flex: 1;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    .cancel-button {
+      background: rgba(139, 87, 42, 0.1);
+      color: var(--accent-color);
+    }
+
+    .confirm-button {
+      background: var(--warning-color);
+      color: white;
+      box-shadow: 0 2px 6px rgba(192, 57, 43, 0.3);
+    }
+
+    @media (max-width: 480px) {
+      #content-textarea {
+        font-size: 1rem;
+        padding: 1rem;
+      }
+
+      .nav-item {
+        padding: 0.5rem;
+      }
+    }
+    .ai-menu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 300px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 2px 0 8px rgba(58, 50, 38, 0.1);
+      z-index: 100;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      padding: 2rem 1rem;
+      box-sizing: border-box;
+    }
+
+    .ai-menu.open {
+      transform: translateX(0);
+    }
+
+    .ai-menu h3 {
+      margin-bottom: 1rem;
+      color: var(--accent-color);
+    }
+
+    .ai-menu-item {
+      padding: 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      margin-bottom: 0.5rem;
+    }
+
+    .ai-menu-item:hover {
+      background: rgba(139, 87, 42, 0.05);
+    }
+
+    /* 需求输入框样式 */
+    .request-card {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 -2px 8px rgba(58, 50, 38, 0.1);
+      z-index: 101;
+      padding: 1rem;
+      box-sizing: border-box;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+    }
+
+    .request-card.open {
+      transform: translateY(0);
+    }
+
+    .request-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      color: var(--ink-color);
+      background-color: #fff;
+      transition: border-color 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    .request-input:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 5px rgba(139, 87, 42, 0.2);
+    }
+
+    .request-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(58, 50, 38, 0.4);
+      z-index: 99;
+      display: none;
+    }
+
+    .overlay.open {
+      display: block;
+    }
+    .ai-menu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 300px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.75); /* 修改：半透明背景 */
+      box-shadow: 2px 0 8px rgba(58, 50, 38, 0.1);
+      z-index: 100;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      padding: 2rem 1rem;
+      box-sizing: border-box;
+      backdrop-filter: blur(5px); /* 添加：毛玻璃效果 */
+    }
+
+    .ai-menu.open {
+      transform: translateX(0);
+    }
+
+    .ai-menu h3 {
+      margin-bottom: 1rem;
+      color: var(--accent-color);
+    }
+
+    .ai-menu-item {
+      padding: 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      margin-bottom: 0.5rem;
+    }
+
+    .ai-menu-item:hover {
+      background: rgba(139, 87, 42, 0.05);
+    }
+
+    /* 需求输入框样式 */
+    .request-card {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.75); /* 修改：半透明背景 */
+      box-shadow: 0 -2px 8px rgba(58, 50, 38, 0.1);
+      z-index: 101;
+      padding: 1rem;
+      box-sizing: border-box;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      backdrop-filter: blur(5px); /* 添加：毛玻璃效果 */
+    }
+
+    .request-card.open {
+      transform: translateY(0);
+    }
+
+    .request-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      color: var(--ink-color);
+      background-color: #fff;
+      transition: border-color 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    .request-input:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 5px rgba(139, 87, 42, 0.2);
+    }
+
+    .request-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(58, 50, 38, 0.4);
+      z-index: 99;
+      display: none;
+    }
+
+    .overlay.open {
+      display: block;
+    }
+    .select-wrapper {
+      margin-bottom: 1rem;
+    }
+
+    .select-label {
+      display: block;
+      font-size: 1rem;
+      color: var(--ink-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .select-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      color: var(--ink-color);
+      background-color: #fff;
+      transition: border-color 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    .select-input:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 5px rgba(139, 87, 42, 0.2);}
+
+    .history-menu {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 300px;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.75);
+      box-shadow: -2px 0 8px rgba(58, 50, 38, 0.1);
+      z-index: 100;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      padding: 2rem 1rem;
+      box-sizing: border-box;
+      backdrop-filter: blur(5px);
+    }
+
+    .history-menu.open {
+      transform: translateX(0);
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .history-header h3 {
+      margin: 0;
+      color: var(--accent-color);
+    }
+
+    .create-chapter-btn {
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+
+    .create-chapter-btn:hover {
+      background: #724820;
+    }
+
+    .chapter-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .chapter-item {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem;
+      border-bottom: 1px solid rgba(139, 87, 42, 0.1);
+      transition: background 0.2s ease;
+    }
+
+    .chapter-item:hover {
+      background: rgba(139, 87, 42, 0.05);
+    }
+
+    .chapter-checkbox {
+      margin-right: 1rem;
+      cursor: pointer;
+    }
+
+    .chapter-title {
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .chapter-delete {
+      color: var(--warning-color);
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .chapter-item:hover .chapter-delete {
+      opacity: 1;
+    }
+
+    .batch-delete-info {
+      padding: 0.75rem;
+      background: rgba(192, 57, 43, 0.1);
+      color: var(--warning-color);
+      text-align: center;
+      font-size: 0.9rem;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div id="app">
+    <!-- 头部 -->
+    <div class="header">
+      <div class="back-button" onclick="goToIndex()">
+        <i class="fas fa-arrow-left"></i>
+      </div>
+      <div class="title">已保存</div>
+      <div class="publish-button">发布章节</div>
+    </div>
+  
+    <!-- 内容区域 -->
+    <div class="content">
+      <input type="text"
+             class="input-field"
+             placeholder="请输入章节名称"
+             id="chapter-title">
+  
+      <textarea
+        id="content-textarea"
+        placeholder="在此处书写您的故事..."
+        maxlength="4000"
+      ></textarea>
+  
+      <div class="word-counter">
+        字数: <span id="word-count">0</span>/4000
+      </div>
+    </div>
+  
+    <!-- 底部导航 -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="handleDelete()">
+        <i class="fas fa-trash-alt"></i>
+        <span>删除</span>
+      </div>
+      <div class="nav-item">
+        <i class="fas fa-cog"></i>
+        <span>设置</span>
+      </div>
+      <div class="nav-item" onclick="toggleAiMenu()">
+        <i class="fas fa-robot"></i>
+        <span>AI辅助</span>
+      </div>
+      <div class="nav-item" onclick="toggleHistoryMenu()">
+        <i class="fas fa-history"></i>
+        <span>章节管理</span>
+      </div>
+       <div class="nav-item" onclick="goToIndex()">
+        <i class="fas fa-home"></i>
+        <span>首页</span>
+      </div>
+    </div>
+  
+   <!-- AI辅助菜单 -->
+   <div class="ai-menu" id="ai-menu">
+    <h3>AI 辅助功能</h3>
+
+    <!-- 模型选择下拉框 -->
+    <div class="select-wrapper">
+      <label for="model-select" class="select-label">选择模型</label>
+      <select class="select-input" id="model-select">
+        <!-- 模型选项将在此处动态生成 -->
+      </select>
+    </div>
+
+    <div class="ai-menu-item" onclick="showRequestCard('扩写')">AI 扩写</div>
+    <div class="ai-menu-item" onclick="showRequestCard('润色')">AI 润色</div>
+    <div class="ai-menu-item" onclick="showRequestCard('开头')">AI 开头</div>
+    <div class="ai-menu-item" onclick="showRequestCard('自定义')">自定义</div>
+  </div>
+<!-- 需求输入框 -->
+<div class="request-card" id="request-card">
+  <textarea class="request-input" id="request-input" placeholder="请输入您的具体需求..."></textarea>
+  <div class="request-buttons">
+    <button class="btn btn-secondary" onclick="hideRequestCard()">取消</button>
+    <button class="btn btn-primary" onclick="sendText()">发送</button>
+  </div>
+</div>
+  
+    <!-- 遮罩层 -->
+    <div class="overlay" id="overlay" onclick="closeAllMenus()"></div>
+  
+    <!-- 删除确认弹窗 -->
+    <div class="popup" id="delete-popup">
+      <div class="popup-content">
+        <h3>确定要删除当前内容吗？</h3>
+        <p>此操作不可撤销，所有未保存内容将会丢失</p>
+        <div class="popup-buttons">
+          <button class="popup-button cancel-button" onclick="hidePopup()">取消</button>
+          <button class="popup-button confirm-button" onclick="deleteContent()">确认删除</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 历史版本菜单 -->
+    <div class="history-menu" id="history-menu">
+      <div class="history-header">
+        <h3>章节管理</h3>
+        <button class="create-chapter-btn" onclick="createNewChapter()">
+          <i class="fas fa-plus"></i> 创建章节
+        </button>
+      </div>
+      <div class="chapter-list" id="chapter-list">
+        <!-- 章节列表将在此处动态生成 -->
+      </div>
+      <div class="batch-delete-info" style="display: none;">
+        已选择 <span id="selected-count">0</span> 个章节
+      </div>
+    </div>
+  </div>
+  <script>
+    function getBookIdFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('bookId');
+    }
+
+    function goToIndex() {
+        window.location.href = 'index.html';
+    }
+
+    const header = document.querySelector('.header');
+    const textarea = document.getElementById('content-textarea');
+    const wordCount = document.getElementById('word-count');
+    const chapterTitleInput = document.getElementById('chapter-title');
+    const bookId = getBookIdFromUrl();
+
+    // AI辅助菜单和需求输入框
+    const aiMenu = document.getElementById('ai-menu');
+    const requestCard = document.getElementById('request-card');
+    const requestInput = document.getElementById('request-input');
+    const overlay = document.getElementById('overlay');
+    const modelSelect = document.getElementById('model-select'); // 模型选择下拉框
+
+    let currentAction = ''; // 当前的AI辅助操作
+    let selectedModel = ''; // 当前选择的模型
+    let selectedModelConfig = null; // 当前选择的模型配置
+
+    let saveTimer;
+
+    const historyMenu = document.getElementById('history-menu');
+
+    // 加载书籍章节内容
+    function loadChapterContent() {
+        if (!bookId) return;
+
+        const isFanxie = new URLSearchParams(window.location.search).get('isFanxie') === 'true';
+
+        if (isFanxie) {
+            const fanxieInputKey = `fanxieInput_${bookId}`;
+            const fanxieInput = localStorage.getItem(fanxieInputKey);
+            if (fanxieInput) {
+                textarea.value = fanxieInput;
+                wordCount.textContent = textarea.value.length;
+                localStorage.removeItem(fanxieInputKey); // 用完删除，避免重复加载
+            }
+        } else {
+            const chapterContentKey = `chapterContent_${bookId}`;
+            const chapterContent = localStorage.getItem(chapterContentKey);
+
+            if (chapterContent) {
+                const content = JSON.parse(chapterContent);
+                textarea.value = content.text || '';
+                chapterTitleInput.value = content.chapterTitle || '';
+                wordCount.textContent = textarea.value.length;
+            }
+        }
+
+    }
+    // 保存书籍章节内容
+    function saveChapterContent() {
+        if (!bookId) return;
+
+        const content = {
+            text: textarea.value,
+            chapterTitle: chapterTitleInput.value
+        };
+
+        const chapterContentKey = `chapterContent_${bookId}`;
+        localStorage.setItem(chapterContentKey, JSON.stringify(content));
+    }
+
+    // 字数统计功能
+    textarea.addEventListener('input', function () {
+        const count = textarea.value.length;
+        wordCount.textContent = count;
+        wordCount.style.color = count > 4000 ? 'var(--warning-color)' : 'inherit';
+        saveChapterContent(); // 每次输入都保存
+    });
+
+    chapterTitleInput.addEventListener('input', saveChapterContent);
+
+    // 自动保存提示
+    textarea.addEventListener('input', () => {
+        clearTimeout(saveTimer);
+        header.classList.add('show');
+
+        saveTimer = setTimeout(() => {
+            header.classList.remove('show');
+        }, 1000);
+    });
+
+    // 弹窗控制
+    function showPopup() {
+        document.getElementById('delete-popup').style.display = 'flex';
+    }
+
+    function hidePopup() {
+        document.getElementById('delete-popup').style.display = 'none';
+    }
+
+    function deleteContent() {
+        textarea.value = '';
+        chapterTitleInput.value = '';
+        wordCount.textContent = '0';
+        // 删除书籍章节数据
+        const chapterContentKey = `chapterContent_${bookId}`;
+        localStorage.removeItem(chapterContentKey);
+        hidePopup();
+    }
+
+    // AI辅助菜单的显示和隐藏
+    function toggleAiMenu() {
+        aiMenu.classList.toggle('open');
+        overlay.classList.toggle('open');
+    }
+
+    function closeAiMenu() {
+        aiMenu.classList.remove('open');
+        overlay.classList.remove('open');
+    }
+
+    // 需求输入框的显示
+    function showRequestCard(action) {
+        currentAction = action;
+        aiMenu.classList.remove('open'); // 修改：关闭 AI 菜单
+        overlay.classList.remove('open'); // 修改：关闭遮罩层
+        requestCard.classList.add('open');
+    }
+
+    // 需求输入框的隐藏
+    function hideRequestCard() {
+        requestCard.classList.remove('open');
+        requestInput.value = ""; //清空输入框
+    }
+
+    // 发送文本给 AI 模型
+    async function sendText() {
+        const selectedText = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd);
+        const request = requestInput.value;
+
+        if (selectedText.length === 0) {
+            alert('请先选择需要处理的文本！');
+            return;
+        }
+
+        const prompt = `你需要${currentAction}这段【${selectedText}】，${request ? '用户的需求是：' + request : ''}`;
+
+        if (!selectedModel) {
+            alert('请先选择模型！');
+            return;
+        }
+        
+        // Validate model configuration
+        if (!selectedModelConfig) {
+            alert('模型配置无效，请检查后台设置');
+            return;
+        }
+        
+        if (selectedModel === 'Gemini' && (!selectedModelConfig.key || selectedModelConfig.key.trim() === '')) {
+            alert('Gemini API Key 未设置或无效，请在后台设置正确的 API Key');
+            return;
+        }
+        
+        if (selectedModel !== 'Gemini' && (!selectedModelConfig.endpoint || selectedModelConfig.endpoint.trim() === '')) {
+            alert('自定义模型 API 端点未设置，请在后台设置正确的 API 端点 URL');
+            return;
+        }
+
+        let aiResponse = "";
+        
+        try {
+            // 显示加载状态
+            const sendButton = document.querySelector('.btn-primary');
+            const originalText = sendButton.textContent;
+            sendButton.textContent = '处理中...';
+            sendButton.disabled = true;
+            
+            console.log(`使用模型 ${selectedModel} 处理文本`);
+            console.log(`模型配置:`, selectedModelConfig);
+            
+            // 调用 AI 模型接口
+            if (selectedModel === 'Gemini' && selectedModelConfig.key) {
+                console.log("调用 Gemini API");
+                aiResponse = await callGeminiAPI(prompt, selectedModelConfig.key);
+            } else if (selectedModel === 'OpenAI' && selectedModelConfig.key) {
+                console.log("调用 OpenAI API");
+                aiResponse = await callOpenAIAPI(prompt, selectedModelConfig.key);
+            } else if (selectedModelConfig.apiKey && selectedModelConfig.endpoint) {
+                console.log("调用自定义 API:", selectedModelConfig.endpoint);
+                
+                if (!selectedModelConfig.apiKey) {
+                    throw new Error("API Key 未提供");
+                }
+                
+                if (!selectedModelConfig.endpoint) {
+                    throw new Error("API 端点 URL 未提供");
+                }
+                
+                // 构建请求体 - 完全按照 DeepSeek 示例格式
+                const requestBody = {
+                    model: selectedModelConfig.model || 'deepseek-chat',
+                    messages: [
+                        {"role": "system", "content": "You are a helpful assistant."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    stream: false
+                };
+                
+                console.log("请求体:", JSON.stringify(requestBody));
+                
+                // 构建请求头 - 完全按照 curl 示例格式
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${selectedModelConfig.apiKey}`
+                };
+                
+                console.log("请求头:", JSON.stringify(headers));
+                
+                const response = await fetch('https://api.deepseek.com/chat/completions', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(requestBody)
+                });
+
+                console.log("API response status:", response.status);
+                
+                if (!response.ok) {
+                    let errorMessage = `API error ${response.status}`;
+                    try {
+                        // Try to parse error as JSON
+                        const errorJson = await response.json();
+                        console.error("API error response:", errorJson);
+                        
+                        if (errorJson.error) {
+                            if (typeof errorJson.error === 'string') {
+                                errorMessage += `: ${errorJson.error}`;
+                            } else if (errorJson.error.message) {
+                                errorMessage += `: ${errorJson.error.message}`;
+                            }
+                        }
+                    } catch (parseError) {
+                        // If JSON parsing fails, get the raw response text
+                        const errorText = await response.text();
+                        errorMessage += `: ${errorText || 'Unknown error'}`;
+                        console.error("API error raw response:", errorText);
+                    }
+                    
+                    throw new Error(errorMessage);
+                }
+                
+                // Parse successful response
+                const data = await response.json();
+                console.log("API response received, parsing...");
+                
+                // Extract text based on response format
+                let text = '';
+                
+                if (data.choices && data.choices.length > 0) {
+                    if (data.choices[0].message) {
+                        text = data.choices[0].message.content;
+                    } else if (data.choices[0].text) {
+                        text = data.choices[0].text;
+                    }
+                } else if (data.response) {
+                    text = data.response;
+                } else if (data.output) {
+                    text = data.output;
+                } else if (data.result) {
+                    text = data.result;
+                } else if (data.generated_text) {
+                    text = data.generated_text;
+                } else if (typeof data === 'string') {
+                    text = data;
+                }
+
+                if (text) {
+                    console.log("Successfully extracted text from custom format response");
+                    aiResponse = text;
+                } else {
+                    throw new Error("API 响应中没有找到文本内容");
+                }
+            }
+
+            // 将结果写入文本区域
+            textarea.value = textarea.value.substring(0, textarea.selectionStart) + 
+                            aiResponse + 
+                            textarea.value.substring(textarea.selectionEnd);
+                            
+            // 更新字数统计
+            wordCount.textContent = textarea.value.length;
+            
+            // 保存内容
+            saveChapterContent();
+
+            // 隐藏请求卡片
+            hideRequestCard();
+        } catch (error) {
+            console.error('调用 AI 模型接口失败:', error);
+            alert('AI 接口调用失败: ' + error.message);
+        } finally {
+            // 恢复按钮状态
+            const sendButton = document.querySelector('.btn-primary');
+            if (sendButton) {
+                sendButton.textContent = '发送';
+                sendButton.disabled = false;
+            }
+        }
+    }
+
+    async function callGeminiAPI(prompt, apiKey) {
+        try {
+            console.log("Starting Gemini API call with key:", apiKey.substring(0, 5) + "...");
+            
+            // Make sure the API key is properly formatted and not undefined
+            if (!apiKey || apiKey.trim() === '') {
+                throw new Error("Invalid API key: API key is empty or undefined");
+            }
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`;
+            console.log("Gemini API URL:", apiUrl);
+            
+            const requestBody = {
+                contents: [{ 
+                    parts: [{ text: prompt }] 
+                }],
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 1000
+                }
+            };
+            
+            console.log("Gemini request payload:", JSON.stringify(requestBody));
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            console.log("Gemini API response status:", response.status);
+            const data = await response.json();
+            
+            if (!response.ok) {
+                console.error("Gemini API error:", data);
+                throw new Error(`Gemini API failed with status ${response.status}: ${JSON.stringify(data.error || {})}`);
+            }
+
+            // Check for expected response structure
+            if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+                console.warn("Unexpected Gemini API response structure:", data);
+                throw new Error("Unexpected Gemini API response structure");
+            }
+
+            // Extract text from Gemini API response
+            const text = data.candidates[0].content.parts[0].text;
+            if (!text) {
+                console.warn("No text found in Gemini API response:", data);
+                return ""; // Return empty string to avoid displaying [object Object]
+            }
+            
+            console.log("Gemini API returned text successfully");
+            return text;
+
+        } catch (error) {
+            console.error('Gemini API call failed:', error);
+            throw error;
+        }
+    }
+
+    // 添加 OpenAI API 调用函数
+    async function callOpenAIAPI(prompt, apiKey) {
+        try {
+            const response = await fetch('https://api.openai.com/v1/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: 'text-davinci-003', // 默认模型，可以根据需要调整
+                    prompt: prompt,
+                    max_tokens: 1000,
+                    temperature: 0.7
+                }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                console.error("OpenAI API error:", data);
+                throw new Error(`OpenAI API failed with status ${response.status}`);
+            }
+
+            // 从 OpenAI API 响应中提取文本
+            const text = data?.choices?.[0]?.text;
+            if (!text) {
+                console.warn("No text found in OpenAI API response:", data);
+                return ""; // 返回空字符串，避免显示 [object Object]
+            }
+            return text;
+
+        } catch (error) {
+            console.error('调用 OpenAI API 失败:', error);
+            throw error;
+        }
+    }
+
+    function renderModelOptions() {
+        const modelSelect = document.getElementById('model-select');
+        modelSelect.innerHTML = ''; // Clear existing options
+
+        // Add Gemini option
+        const modelConfigString = localStorage.getItem('modelConfig');
+        if (modelConfigString) {
+            try {
+                const modelConfig = JSON.parse(modelConfigString);
+                if (modelConfig && modelConfig.gemini && modelConfig.gemini.key) {
+                    const option = document.createElement('option');
+                    option.value = 'Gemini';
+                    option.text = modelConfig.gemini.name; // 使用正确的模型名称
+                    modelSelect.add(option);
+                }
+            } catch (error) {
+                console.warn("Error parsing modelConfig:", error);
+            }
+        }
+
+        // Add other model options (Custom models)
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key === 'modelConfig' || key.startsWith('chapterContent_')) continue;
+
+            if (key.startsWith('customModel-')) {
+                try {
+                    const configString = localStorage.getItem(key);
+                    if (configString) {
+                        const config = JSON.parse(configString);
+                        if (typeof config === 'object' && config !== null && config.hasOwnProperty('apiKey') && config.hasOwnProperty('endpoint')) {
+                            const option = document.createElement('option');
+                            option.value = key; // 模型名称作为value
+                            option.text = key.replace('customModel-', ''); //显示模型名称
+                            modelSelect.add(option);
+                        }
+                    }
+                } catch (error) {
+                    console.warn(`Could not parse config for key: ${key}`, error);
+                }
+            }
+        }
+
+        // If there are options, default select the first one
+        if (modelSelect.options.length > 0) {
+            selectedModel = modelSelect.options[0].value;
+            updateSelectedModelConfig(selectedModel);
+        } else {
+            selectedModel = null; // Ensure selectedModel is null
+            selectedModelConfig = null; // Ensure selectedModelConfig is null
+        }
+    }
+    // Update selectedModelConfig based on selectedModel
+    function updateSelectedModelConfig(selectedModel) {
+        console.log("Updating model config for model:", selectedModel);
+        
+        if (selectedModel === 'Gemini') {
+            const modelConfigString = localStorage.getItem('modelConfig');
+            if (modelConfigString) {
+                try {
+                    const modelConfig = JSON.parse(modelConfigString);
+                    selectedModelConfig = modelConfig.gemini;
+                    
+                    if (!selectedModelConfig || !selectedModelConfig.key) {
+                        console.error("Invalid Gemini configuration:", selectedModelConfig);
+                        alert("Gemini 模型配置无效，请在后台设置正确的 API Key");
+                        selectedModelConfig = null;
+                    } else {
+                        console.log("Gemini model configured successfully");
+                    }
+                } catch (error) {
+                    console.error("Error parsing modelConfig:", error);
+                    selectedModelConfig = null;
+                }
+            }
+        } else {
+            try {
+                const configString = localStorage.getItem(selectedModel);
+                if (configString) {
+                    selectedModelConfig = JSON.parse(configString);
+                    console.log("Loaded model config:", selectedModelConfig);
+                    
+                    // Validate config
+                    if (!selectedModelConfig.endpoint) {
+                        console.error("Missing endpoint in custom model config", selectedModelConfig);
+                        alert("自定义模型配置缺少 API 端点 URL");
+                        selectedModelConfig = null;
+                        return;
+                    }
+                    
+                    // 清理端点URL，移除前后空格
+                    selectedModelConfig.endpoint = selectedModelConfig.endpoint.trim();
+                    
+                    // 检查端点URL是否有效
+                    if (!selectedModelConfig.endpoint.startsWith('http')) {
+                        console.error("Invalid endpoint URL format:", selectedModelConfig.endpoint);
+                        alert("API 端点 URL 格式错误，必须以 http:// 或 https:// 开头");
+                        selectedModelConfig = null;
+                        return;
+                    }
+                    
+                    if (!selectedModelConfig.apiKey) {
+                        console.warn("Missing API key in custom model config - proceeding anyway");
+                    }
+                    
+                    // Ensure format and params are properly set
+                    if (selectedModelConfig.format === 'openai') {
+                        console.log("Setting up OpenAI-compatible model");
+                        
+                        // Initialize params object if not exists
+                        if (!selectedModelConfig.params) {
+                            selectedModelConfig.params = {};
+                        }
+                        
+                        // Ensure format is set in params
+                        selectedModelConfig.params.format = 'openai';
+                        
+                        // If model is specified, set it in params too
+                        if (selectedModelConfig.model) {
+                            selectedModelConfig.params.model = selectedModelConfig.model;
+                            console.log("Using model:", selectedModelConfig.model);
+                        } else {
+                            console.warn("No model specified for OpenAI-compatible API");
+                            // 如果没有指定模型名，尝试从配置名称中提取
+                            const modelNameFromKey = selectedModel.replace('customModel-', '');
+                            if (modelNameFromKey.includes('deepseek')) {
+                                selectedModelConfig.params.model = 'deepseek-chat';
+                                console.log("Auto-detected DeepSeek model, using deepseek-chat");
+                            } else {
+                                selectedModelConfig.params.model = 'gpt-3.5-turbo';
+                                console.log("Using default model: gpt-3.5-turbo");
+                            }
+                        }
+                        
+                        // 特殊处理 DeepSeek API
+                        if (selectedModelConfig.endpoint.includes('deepseek')) {
+                            console.log("DeepSeek API detected, adjusting configuration");
+                            
+                            // 确保URL格式正确 (应该是 /chat/completions 而不是 /v1/chat/completions)
+                            if (selectedModelConfig.endpoint.endsWith('/v1')) {
+                                selectedModelConfig.endpoint = selectedModelConfig.endpoint.replace('/v1', '');
+                                console.log("Fixed DeepSeek endpoint:", selectedModelConfig.endpoint);
+                            }
+                            
+                            if (!selectedModelConfig.endpoint.endsWith('/chat/completions')) {
+                                // 如果URL不是以 /chat/completions 结尾，添加这个路径
+                                selectedModelConfig.endpoint = selectedModelConfig.endpoint.replace(/\/$/, ''); // 移除末尾的斜杠
+                                selectedModelConfig.endpoint += '/chat/completions';
+                                console.log("Updated DeepSeek endpoint to:", selectedModelConfig.endpoint);
+                            }
+                            
+                            // 确保使用正确的模型名称
+                            if (!selectedModelConfig.params.model || !selectedModelConfig.params.model.includes('deepseek')) {
+                                selectedModelConfig.params.model = 'deepseek-chat';
+                                console.log("Set DeepSeek model name to: deepseek-chat");
+                            }
+                        }
+                        
+                        console.log("Custom OpenAI-compatible model configured successfully");
+                        console.log("Final config:", selectedModelConfig);
+                    } else {
+                        console.log("Setting up generic custom model");
+                    }
+                } else {
+                    console.error(`No config found for key: ${selectedModel}`);
+                    selectedModelConfig = null;
+                }
+            } catch (error) {
+                console.error(`Error parsing config for key: ${selectedModel}`, error);
+                selectedModelConfig = null;
+            }
+        }
+    }
+
+    // Model select event listener
+    modelSelect.addEventListener('change', function () {
+        selectedModel = this.value;
+        updateSelectedModelConfig(selectedModel);
+    });
+
+    // 打开历史版本菜单
+    function toggleHistoryMenu() {
+      historyMenu.classList.toggle('open');
+      overlay.classList.toggle('open');
+    }
+
+    // 关闭所有菜单
+    function closeAllMenus() {
+      historyMenu.classList.remove('open');
+      aiMenu.classList.remove('open');
+      overlay.classList.remove('open');
+    }
+
+    // 创建新章节
+    function createNewChapter() {
+      const chapterTitle = prompt('请输入章节标题');
+      if (!chapterTitle) return;
+
+      const bookId = getBookIdFromUrl();
+      if (!bookId) return;
+
+      const chapters = getBookChapters(bookId);
+      const newChapter = {
+        id: generateChapterId(),
+        title: chapterTitle,
+        content: '',
+        createTime: Date.now()
+      };
+
+      chapters.push(newChapter);
+      saveBookChapters(bookId, chapters);
+      renderChapterList();
+    }
+
+    // 生成章节ID
+    function generateChapterId() {
+      return Math.random().toString(36).substring(2, 15);
+    }
+
+    // 获取书籍的所有章节
+    function getBookChapters(bookId) {
+      const chaptersKey = `chapters_${bookId}`;
+      return JSON.parse(localStorage.getItem(chaptersKey)) || [];
+    }
+
+    // 保存书籍章节
+    function saveBookChapters(bookId, chapters) {
+      const chaptersKey = `chapters_${bookId}`;
+      localStorage.setItem(chaptersKey, JSON.stringify(chapters));
+    }
+
+    // 渲染章节列表
+    function renderChapterList() {
+      const bookId = getBookIdFromUrl();
+      if (!bookId) return;
+
+      const chapters = getBookChapters(bookId);
+      const chapterList = document.getElementById('chapter-list');
+      chapterList.innerHTML = '';
+
+      chapters.forEach(chapter => {
+        const chapterItem = document.createElement('div');
+        chapterItem.classList.add('chapter-item');
+        if (chapter.id === getCurrentChapterId()) {
+          chapterItem.classList.add('active');
+        }
+
+        chapterItem.innerHTML = `
+          <div class="chapter-title">${chapter.title}</div>
+          <div class="chapter-time">${new Date(chapter.createTime).toLocaleString()}</div>
+        `;
+
+        chapterItem.onclick = () => switchChapter(chapter.id);
+        chapterList.appendChild(chapterItem);
+      });
+    }
+
+    // 切换章节
+    function switchChapter(chapterId) {
+      const bookId = getBookIdFromUrl();
+      const chapters = getBookChapters(bookId);
+      const chapter = chapters.find(c => c.id === chapterId);
+      
+      if (chapter) {
+        textarea.value = chapter.content;
+        chapterTitleInput.value = chapter.title;
+        wordCount.textContent = chapter.content.length;
+        setCurrentChapterId(chapterId);
+        renderChapterList();
+      }
+    }
+
+    // 获取/设置当前章节ID
+    function getCurrentChapterId() {
+      const bookId = getBookIdFromUrl();
+      return localStorage.getItem(`currentChapter_${bookId}`);
+    }
+
+    function setCurrentChapterId(chapterId) {
+      const bookId = getBookIdFromUrl();
+      localStorage.setItem(`currentChapter_${bookId}`, chapterId);
+    }
+
+    // 修改保存章节内容的函数
+    function saveChapterContent() {
+      const bookId = getBookIdFromUrl();
+      if (!bookId) return;
+
+      const chapters = getBookChapters(bookId);
+      const currentChapterId = getCurrentChapterId();
+      
+      if (!currentChapterId) {
+        // 如果没有当前章节ID，创建第一个章节
+        const firstChapter = {
+          id: generateChapterId(),
+          title: chapterTitleInput.value || '第一章',
+          content: textarea.value,
+          createTime: Date.now()
+        };
+        chapters.push(firstChapter);
+        setCurrentChapterId(firstChapter.id);
+      } else {
+        // 更新现有章节
+        const chapter = chapters.find(c => c.id === currentChapterId);
+        if (chapter) {
+          chapter.content = textarea.value;
+          chapter.title = chapterTitleInput.value;
+        }
+      }
+
+      saveBookChapters(bookId, chapters);
+    }
+
+    function createFirstChapter() {
+        const firstChapter = {
+            id: generateChapterId(),
+            title: '第一章',
+            content: '',
+            createTime: Date.now()
+        };
+        
+        const chapters = [firstChapter];
+        saveBookChapters(bookId, chapters);
+        setCurrentChapterId(firstChapter.id);
+        loadChapterContent();
+    }
+
+    window.onload = () => {
+        const chapters = getBookChapters(bookId);
+        if (chapters.length === 0) {
+            // 如果没有章节，创建第一个章节
+            createFirstChapter();
+        } else {
+            // 如果有章节但没有当前章节ID，加载第一个章节
+            const currentChapterId = getCurrentChapterId();
+            if (!currentChapterId) {
+                switchChapter(chapters[0].id);
+            } else {
+                loadChapterContent();
+            }
+        }
+        renderModelOptions();
+        renderChapterList();
+        textarea.focus();
+    };
+    function renderChapterList() {
+  const bookId = getBookIdFromUrl();
+  const chapters = getBookChapters(bookId);
+  const chapterList = document.getElementById('chapter-list');
+  const currentChapterId = getCurrentChapterId();
+  
+  chapterList.innerHTML = '';
+  
+  chapters.forEach(chapter => {
+    const chapterItem = document.createElement('div');
+    chapterItem.className = 'chapter-item';
+    if (chapter.id === currentChapterId) {
+      chapterItem.classList.add('active');
+    }
+    
+    chapterItem.innerHTML = `
+      <input type="checkbox" class="chapter-checkbox" data-chapter-id="${chapter.id}">
+      <div class="chapter-title" onclick="switchChapter('${chapter.id}')">${chapter.title}</div>
+      <i class="fas fa-trash chapter-delete" onclick="deleteChapter('${chapter.id}')"></i>
+    `;
+    
+    chapterList.appendChild(chapterItem);
+  });
+}
+
+function deleteChapter(chapterId) {
+  if (!confirm('确定要删除这个章节吗？')) return;
+  
+  const bookId = getBookIdFromUrl();
+  let chapters = getBookChapters(bookId);
+  
+  chapters = chapters.filter(chapter => chapter.id !== chapterId);
+  saveBookChapters(bookId, chapters);
+  
+  // If deleted chapter was current chapter, switch to first available chapter
+  if (getCurrentChapterId() === chapterId) {
+    const firstChapter = chapters[0];
+    if (firstChapter) {
+      switchChapter(firstChapter.id);
+    } else {
+      textarea.value = '';
+      chapterTitleInput.value = '';
+      setCurrentChapterId(null);
+    }
+  }
+  
+  renderChapterList();
+}
+
+function handleBatchDelete() {
+  const selectedCheckboxes = document.querySelectorAll('.chapter-checkbox:checked');
+  if (selectedCheckboxes.length === 0) {
+    alert('请先选择要删除的章节！');
+    return;
+  }
+  
+  if (!confirm(`确定要删除选中的 ${selectedCheckboxes.length} 个章节吗？`)) return;
+  
+  const bookId = getBookIdFromUrl();
+  let chapters = getBookChapters(bookId);
+  const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.dataset.chapterId);
+  
+  chapters = chapters.filter(chapter => !selectedIds.includes(chapter.id));
+  saveBookChapters(bookId, chapters);
+  
+  // If current chapter was deleted, switch to first available chapter
+  if (selectedIds.includes(getCurrentChapterId())) {
+    const firstChapter = chapters[0];
+    if (firstChapter) {
+      switchChapter(firstChapter.id);
+    } else {
+      textarea.value = '';
+      chapterTitleInput.value = '';
+      setCurrentChapterId(null);
+    }
+  }
+  
+  renderChapterList();
+}
+
+// Add event listener to checkboxes for showing/hiding batch delete info
+document.addEventListener('change', function(e) {
+  if (e.target.matches('.chapter-checkbox')) {
+    const selectedCount = document.querySelectorAll('.chapter-checkbox:checked').length;
+    const batchDeleteInfo = document.querySelector('.batch-delete-info');
+    const selectedCountSpan = document.getElementById('selected-count');
+    
+    if (selectedCount > 0) {
+      batchDeleteInfo.style.display = 'block';
+      selectedCountSpan.textContent = selectedCount;
+    } else {
+      batchDeleteInfo.style.display = 'none';
+    }
+  }
+});
+
+// Connect delete button in bottom nav to batch delete function
+document.querySelector('.nav-item[onclick="handleDelete()"]').onclick = handleBatchDelete;
+  </script>
+  </body>
+  </html>
