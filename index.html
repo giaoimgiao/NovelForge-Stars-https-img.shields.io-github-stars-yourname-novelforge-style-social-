@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>开发测试01</title>
+  <style>
+    :root {
+      --paper-color: #f5eedc;
+      --ink-color: #3a3226;
+      --accent-color: #8b572a;
+      --error-color: #e74c3c; /* 新增错误颜色 */
+    }
+
+    body {
+      font-family: 'Noto Serif SC', serif;
+      margin: 0;
+      padding: 0;
+      background: url('https://www.transparenttextures.com/patterns/cream-paper.png') var(--paper-color);
+      color: var(--ink-color);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 1rem;
+      background: rgba(245, 238, 220, 0.9);
+      box-shadow: 0 2px 8px rgba(58, 50, 38, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .nav-links {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1.5rem;
+    }
+
+    .nav-links a {
+      color: var(--accent-color);
+      text-decoration: none;
+      font-weight: 500;
+      position: relative;
+      padding: 0.25rem 0;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent-color);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 2rem 1rem;
+      max-width: 680px;
+      margin: 0 auto;
+      width: 90%;
+      text-align: center; /* 添加此行，使书名居中 */
+    }
+
+    #book-title-display {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      color: var(--ink-color);
+    }
+
+    .writing-card {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(58, 50, 38, 0.1);
+      border: 1px solid rgba(139, 87, 42, 0.15);
+    }
+
+    .writing-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(to right, transparent 98%, rgba(139, 87, 42, 0.05) 100%);
+      pointer-events: none;
+    }
+
+    .notebook-cover {
+      width: 160px;
+      height: 220px;
+      margin: 1rem auto;
+      background: #fff5e6;
+      border-radius: 4px;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(58, 50, 38, 0.15);
+      overflow: hidden;
+    }
+
+    .notebook-cover::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 23px,
+        rgba(139, 87, 42, 0.1) 24px
+      );
+    }
+
+    .pen-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--accent-color);
+      font-size: 3rem;
+      opacity: 0.8;
+    }
+
+    .create-button {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(139, 87, 42, 0.2);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .create-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(58, 50, 38, 0.1);
+    }
+
+    .create-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(139, 87, 42, 0.05),
+        transparent
+      );
+      transition: left 0.6s;
+    }
+
+    .create-button:hover::before {
+      left: 100%;
+    }
+
+    .button-icon {
+      font-size: 1.5rem;
+      color: var(--accent-color);
+      min-width: 32px;
+    }
+
+    .button-text h3 {
+      margin: 0;
+      font-weight: 600;
+      color: var(--ink-color);
+    }
+
+    .button-text p {
+      margin: 0.25rem 0 0;
+      font-size: 0.9rem;
+      color: #665c4f;
+    }
+
+    footer {
+      background: rgba(245, 238, 220, 0.9);
+      padding: 1rem;
+      text-align: center;
+      border-top: 1px solid rgba(139, 87, 42, 0.1);
+      margin-top: auto;
+    }
+
+    .footer-nav {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+    }
+
+    .footer-nav a {
+      color: var(--accent-color);
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .footer-nav i {
+      font-size: 1.2rem;
+    }
+
+    /*  新增的弹窗样式 */
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        z-index: 100;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .modal.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .modal-content {
+        background-color: var(--paper-color);
+        border-radius: 20px 20px 0 0;
+        width: 100%;
+        max-width: 600px;
+        padding: 2rem;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+        box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal.active .modal-content {
+        transform: translateY(0);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .modal-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: var(--ink-color);
+    }
+
+    .close-button {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: var(--accent-color);
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+    .close-button:hover {
+        transform: rotate(90deg);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 1rem;
+        color: var(--ink-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        font-family: 'Noto Serif SC', serif;
+        font-size: 1rem;
+        color: var(--ink-color);
+        background-color: #fff;
+        transition: border-color 0.3s ease;
+    }
+
+     .form-control:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 5px rgba(139, 87, 42, 0.2);
+    }
+
+    .btn-container {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        padding: 0.8rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: 'Noto Serif SC', serif;
+        font-size: 1rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:active {
+        transform: scale(0.95);
+        box-shadow: none;
+    }
+
+    .btn-secondary {
+        background-color: rgba(139, 87, 42, 0.1);
+        color: var(--accent-color);
+    }
+
+    .btn-primary {
+        background-color: var(--accent-color);
+        color: #fff;
+        box-shadow: 0 3px 5px rgba(139, 87, 42, 0.3);
+    }
+
+    @media (max-width: 480px) {
+      .main-content {
+        width: 95%;
+        padding: 1rem 0;
+      }
+      
+      .writing-card {
+        padding: 1.5rem;
+      }
+    }
+    .error-message {
+      color: var(--error-color);
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+      display: none; /* 初始时隐藏 */
+    }
+    .book-list {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .book-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(58, 50, 38, 0.1);
+            border: 1px solid rgba(139, 87, 42, 0.15);
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            text-decoration: none; /* 移除链接的下划线 */
+            color: inherit; /* 继承父元素的颜色 */
+        }
+
+        .book-card:hover {
+            transform: translateY(-2px);
+        }
+        .book-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* 网格布局 */
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .book-card {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 12px;
+        padding: 1rem;
+        position: relative;
+        box-shadow: 0 4px 12px rgba(58, 50, 38, 0.1);
+        border: 1px solid rgba(139, 87, 42, 0.15);
+        text-align: center;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        text-decoration: none;
+        color: inherit;
+        overflow: hidden;
+    }
+
+    .book-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .book-title {
+        margin-top: 0.5rem;
+        font-size: 1rem;
+        font-weight: bold;
+    }
+
+    .delete-button {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: rgba(231, 76, 60, 0.8);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .book-card:hover .delete-button {
+        opacity: 1;
+    }
+
+    .delete-button:hover {
+        background: rgba(231, 76, 60, 1);
+    }
+
+     /* 仿写弹窗 */
+     #fanxieModal .modal-content {
+        align-items: center;
+        text-align: center;
+    }
+
+    #fanxieModal .form-control {
+        margin-bottom: 1rem;
+    }
+
+    #fanxieModal .btn-container {
+        justify-content: center;
+    }
+
+    /* 新增样式 */
+    .file-upload-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      margin-bottom: 1rem; /* 增加文件上传按钮的间距 */
+    }
+
+    .file-upload-button {
+      background-color: var(--accent-color);
+      color: #fff;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: inline-block; /* 确保按钮可以正确显示 */
+    }
+
+    .file-upload-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 3px 5px rgba(139, 87, 42, 0.3);
+    }
+
+    .file-upload-input {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    /* 作品选择列表样式 */
+    .book-select-list {
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      text-align: left; /* 使列表项左对齐 */
+    }
+
+    .book-select-item {
+      display: flex;
+      align-items: center;
+      padding: 0.25rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .book-select-item:hover {
+      background-color: rgba(139, 87, 42, 0.05);
+    }
+
+    .book-select-item input[type="radio"] {
+      margin-right: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="nav-links">
+      <a href="#">草稿箱</a>
+      <a href="#">作品集</a>
+      <a href="inspiration.html">灵感库</a>
+    </nav>
+  </header>
+
+  <main class="main-content">
+    <div class="book-list" id="book-list">
+        <!-- 书籍列表将在此处动态生成 -->
+    </div>
+
+    <div class="create-button" onclick="openModal()">
+      <i class="fas fa-book-open button-icon"></i>
+      <div class="button-text">
+        <h3>新建作品集</h3>
+        <p>开启Ai创作文学之旅</p>
+      </div>
+    </div>
+
+    <div class="create-button" onclick="openFanxieModal()">
+      <i class="fas fa-lock button-icon"></i>
+      <div class="button-text">
+        <h3>仿写作品<span class="lightning">✒️</span></h3>
+        <p>没有创意？试试Ai吧</p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <nav class="footer-nav">
+      <a href="#">
+        <i class="fas fa-home"></i>
+        首页
+      </a>
+      <a href="create.html">
+        <i class="fas fa-user-edit"></i>
+        创作
+      </a>
+      <a href="admin.html">
+        <i class="fas fa-chart-line"></i>
+        模型
+      </a>
+    </nav>
+  </footer>
+
+  <!-- 新建作品弹窗 -->
+  <div class="modal" id="newBookModal">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title">新建作品</h5>
+              <button type="button" class="close-button" onclick="closeModal()">
+                  <i class="fas fa-times"></i>
+              </button>
+          </div>
+          <div class="form-group">
+              <label for="bookTitle" class="form-label">作品名称</label>
+              <input type="text" class="form-control" id="bookTitle" placeholder="请输入作品名称" maxlength="15">
+              <div id="title-error" class="error-message">作品名称不能超过15个字</div>
+          </div>
+          <div class="btn-container">
+              <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
+              <button type="button" class="btn btn-primary" onclick="createBook()">确认</button>
+          </div>
+      </div>
+  </div>
+
+  <!-- 仿写作品弹窗 -->
+  <div class="modal" id="fanxieModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">上传或选择开头</h5>
+        <button type="button" class="close-button" onclick="closeFanxieModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">选择作品</label>
+        <div class="book-select-list" id="book-select-list">
+          <!-- 作品列表将在此处动态生成 -->
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="fanxieContent" class="form-label">自定义开头(最多2000字)</label>
+        <textarea class="form-control" id="fanxieContent" rows="5" maxlength="2000" placeholder="在此输入你的开头...(有违禁词过滤-生成后打几个字才能保存)"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">或者上传TXT文件:</label>
+        <div class="file-upload-wrapper">
+          <button class="file-upload-button">选择文件</button>
+          <input type="file" id="file-input" class="file-upload-input" accept=".txt">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">随机选择系统提供开头</label>
+        <div class="file-upload-wrapper">
+            <button class="file-upload-button" id="random-button">随机选择</button>
+            <input type="file" id="file-input" class="file-upload-input" accept=".txt" style="display: none;">
+        </div>
+    </div>
+      
+      <div class="btn-container">
+        <button type="button" class="btn btn-secondary" onclick="closeFanxieModal()">取消</button>
+        <button type="button" class="btn btn-primary" onclick="startFanxie()">开始仿写</button>
+      </div>
+    </div>
+  </div>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <script>
+    const newBookModal = document.getElementById('newBookModal');
+    const bookTitleInput = document.getElementById('bookTitle');
+    const titleError = document.getElementById('title-error');
+    const bookListContainer = document.getElementById('book-list');
+
+    const fanxieModal = document.getElementById('fanxieModal');
+    const fanxieContentInput = document.getElementById('fanxieContent');
+
+    const fileInput = document.getElementById('file-input');
+    const randomButton = document.getElementById('random-button');
+
+    const bookSelectList = document.getElementById('book-select-list');
+
+    let selectedBookId = null; // 存储选定的书籍ID
+// 随机文本文件路径
+const randomTexts = [
+  "1.txt",
+  "2.txt",
+  "3.txt",
+  "4.txt"
+];
+
+//文件路径
+const filePathPrefix = ""; // 文件放置在同级目录，所以设置为空字符串
+
+randomButton.addEventListener('click', function() {
+    // 随机选择文件路径
+    const randomIndex = Math.floor(Math.random() * randomTexts.length);
+    const selectedText = randomTexts[randomIndex];
+    const filePath = filePathPrefix + selectedText;
+
+    // 设置 input[type="file"] 的 value，模拟文件选择
+    fileInput.dataset.filePath = filePath; // 将文件路径存储在 data 属性中
+
+    console.log("选择的文件路径", filePath); // 添加日志
+
+    fileInput.click(); // 触发文件选择对话框
+});
+
+fileInput.addEventListener('change', async function() {
+    const filePath = this.dataset.filePath; // 获取文件路径
+    console.log("当前filePath:", filePath);
+
+    try {
+        const content = await fetchRandomTextContent(filePath); // 使用封装的 fetch 函数读取内容
+        fanxieContentInput.value = content; // 设置到 textarea
+    } catch (error) {
+        console.error("文件读取错误:", error);
+        alert("文件读取失败，请检查文件格式是否正确");
+    }
+});
+
+// 封装 fetch 函数
+async function fetchRandomTextContent(filePath) {
+  try {
+    const response = await fetch(filePath);
+    if (!response.ok) {
+      console.error(`HTTP error! status: ${response.status}, url: ${filePath}`); // 打印 URL
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.text();
+  } catch (error) {
+    console.error("Failed to fetch text content:", error);
+    return null; // 或者返回一个默认文本
+  }
+}
+
+// 随机选择
+randomButton.addEventListener('click', async function() {
+  const randomIndex = Math.floor(Math.random() * randomTexts.length);
+  const selectedText = randomTexts[randomIndex];
+
+  // 拼接文件路径
+  const filePath = filePathPrefix + selectedText;
+
+  // 读取文本内容
+  const content = await fetchRandomTextContent(filePath);
+
+  // 加载TXT内容
+   if (content !== null && content != undefined) {
+        fanxieContentInput.value = content;
+    } else {
+        // Handle the case where content is null
+        console.warn("Failed to load content from:", filePath);
+        fanxieContentInput.value = "Failed to load content. Please try again.";
+    }
+});
+
+    function openModal() {
+      newBookModal.classList.add('active');
+    }
+
+    function closeModal() {
+      newBookModal.classList.remove('active');
+      titleError.style.display = 'none';
+    }
+
+    function generateBookId() {
+        return Math.random().toString(36).substring(2, 15);
+    }
+
+    function createBook() {
+        const bookTitle = bookTitleInput.value.trim();
+
+        if (bookTitle.length > 15) {
+            titleError.style.display = 'block';
+            return;
+        } else {
+            titleError.style.display = 'none';
+        }
+
+        const bookId = generateBookId();
+        const bookData = {
+            id: bookId,
+            title: bookTitle
+        };
+
+        let books = JSON.parse(localStorage.getItem('books')) || [];
+        books.push(bookData);
+        localStorage.setItem('books', JSON.stringify(books));
+
+        closeModal();
+        renderBookList();
+    }
+
+    function deleteBook(bookId) {
+        let books = JSON.parse(localStorage.getItem('books')) || [];
+        books = books.filter(book => book.id !== bookId);
+        localStorage.setItem('books', JSON.stringify(books));
+        renderBookList();
+    }
+
+    function renderBookList() {
+    bookListContainer.innerHTML = '';
+    let books = JSON.parse(localStorage.getItem('books')) || [];
+
+    books.forEach(book => {
+        const bookCard = document.createElement('a');
+        bookCard.classList.add('book-card');
+        bookCard.href = `xie.html?bookId=${book.id}`;
+
+        bookCard.innerHTML = `
+            <button class="delete-button" onclick="event.preventDefault(); deleteBook('${book.id}')">
+                <i class="fas fa-trash"></i>
+            </button>
+            <div class="notebook-cover">
+                <i class="fas fa-feather-alt pen-icon"></i>
+            </div>
+            <h3 class="book-title">${book.title}</h3>
+        `;
+        bookListContainer.appendChild(bookCard);
+    });
+}
+
+
+    function openFanxieModal() {
+        const books = JSON.parse(localStorage.getItem('books')) || [];
+        if (books.length === 0) {
+            alert('请先新建作品');
+            return;
+        }
+
+        // 渲染作品选择列表
+        renderBookSelectList();
+
+        fanxieModal.classList.add('active');
+    }
+
+    function closeFanxieModal() {
+        fanxieModal.classList.remove('active');
+        fanxieContentInput.value = '';
+    }
+
+    // 读取文件内容
+    function readFileContent(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (event) => resolve(event.target.result);
+            reader.onerror = (error) => reject(error);
+            reader.readAsText(file, 'UTF-8');
+        });
+    }
+
+    //随机读取TXT 内容
+    async function fetchRandomTextContent(filePath) {
+      try {
+        const response = await fetch(filePath);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.text();
+      } catch (error) {
+        console.error("Failed to fetch text content:", error);
+        return null; // 或者返回一个默认文本
+      }
+    }
+
+    // 上传文件处理
+    fileInput.addEventListener('change', async function() {
+      if (this.files && this.files[0]) {
+        try {
+          const fileContent = await readFileContent(this.files[0]);
+          fanxieContentInput.value = fileContent;
+        } catch (error) {
+          console.error("文件读取错误:", error);
+          alert("文件读取失败，请检查文件格式是否正确");
+        }
+      }
+    });
+    // 随机选择
+    randomButton.addEventListener('click', async function() {
+      const randomIndex = Math.floor(Math.random() * randomTexts.length);
+      const selectedText = randomTexts[randomIndex];
+
+      // 拼接文件路径
+      const filePath = filePathPrefix + selectedText;
+
+      // 读取文本内容
+      const content = await fetchRandomTextContent(filePath);
+
+      // 加载TXT内容
+      fanxieContentInput.value = content;
+    });
+    
+    // 渲染作品选择列表
+    function renderBookSelectList() {
+      bookSelectList.innerHTML = '';
+      const books = JSON.parse(localStorage.getItem('books')) || [];
+
+      books.forEach(book => {
+        const bookSelectItem = document.createElement('div');
+        bookSelectItem.classList.add('book-select-item');
+
+        const radioInput = document.createElement('input');
+        radioInput.type = 'radio';
+        radioInput.name = 'selectedBook';
+        radioInput.value = book.id;
+        radioInput.id = `book-${book.id}`;
+
+        const label = document.createElement('label');
+        label.htmlFor = `book-${book.id}`;
+        label.textContent = book.title;
+
+        bookSelectItem.appendChild(radioInput);
+        bookSelectItem.appendChild(label);
+        bookSelectList.appendChild(bookSelectItem);
+
+        // 添加点击事件，更新选定的书籍ID
+        radioInput.addEventListener('change', () => {
+          selectedBookId = book.id;
+        });
+      });
+       // 确保默认选中第一个radio
+       if (books.length > 0) {
+            const firstRadio = document.querySelector('input[name="selectedBook"]');
+            if (firstRadio) {
+                firstRadio.checked = true;
+                selectedBookId = firstRadio.value;
+            }
+        }
+    }
+     // 启动仿写功能
+     async function startFanxie() {
+        if (!selectedBookId) {
+            alert('请先选择一个作品！');
+            return;
+        }
+        const fanxieContent = fanxieContentInput.value.trim();
+
+        // 将 fanxieContent 发送到后端进行 AI 处理，然后更新 xie.html 的内容
+        const prompt = `请根据以下剧情结构写个小说开头，不要抄袭内容只写个类似结构的故事：${fanxieContent}`;
+        let aiResponse = "";
+        try {
+            console.log("发送给 AI 的 Prompt:", prompt); // 添加日志
+            aiResponse = await getAiResponse(prompt);
+
+            // 移除所有不安全的 URI 字符（控制字符、特殊符号等）
+            aiResponse = aiResponse.replace(/[^a-zA-Z0-9\u4e00-\u9fa5\s.,?!，。？！]/g, '');
+            console.log("AI 返回的原始文本:", aiResponse); // 添加日志
+
+        } catch (error) {
+            console.error('AI 调用失败:', error);
+            alert('AI 调用失败，请检查网络或模型配置');
+            return; // 停止执行，避免跳转到 xie.html
+        }
+        //跳转到xie.html
+        window.location.href = `xie.html?bookId=${selectedBookId}&aiResponse=${encodeURIComponent(aiResponse)}`;
+
+        closeFanxieModal();
+    }
+    // 调用 AI 模型
+    async function getAiResponse(prompt) {
+        // 从 localStorage 中获取模型配置
+        const modelConfigString = localStorage.getItem('modelConfig');
+        let apiKey = '';
+        let modelType = 'gemini'; // 默认使用 Gemini
+        let customModelConfig = null;
+        
+        // 获取所有可用模型
+        const availableModels = [];
+        
+        // 检查 Gemini 配置
+        if (modelConfigString) {
+            try {
+                const modelConfig = JSON.parse(modelConfigString);
+                if (modelConfig?.gemini?.key) {
+                    apiKey = modelConfig.gemini.key;
+                    availableModels.push('gemini');
+                }
+            } catch (error) {
+                console.error("解析模型配置失败:", error);
+            }
+        }
+        
+        // 检查自定义模型配置
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('customModel-')) {
+                try {
+                    const config = JSON.parse(localStorage.getItem(key));
+                    if (config && config.apiKey && config.endpoint) {
+                        customModelConfig = config;
+                        modelType = 'custom';
+                        availableModels.push('custom');
+                        break; // 使用第一个找到的自定义模型
+                    }
+                } catch (error) {
+                    console.error(`解析自定义模型配置失败(${key}):`, error);
+                }
+            }
+        }
+        
+        // 如果没有可用模型，返回错误
+        if (availableModels.length === 0) {
+            return "未找到可用的 AI 模型配置，请先在后台配置模型";
+        }
+        
+        console.log("使用模型类型:", modelType);
+        console.log("可用模型:", availableModels);
+        console.log("自定义模型配置:", customModelConfig);
+        
+        try {
+            let text = "";
+            
+            if (modelType === 'gemini') {
+                // 使用 Gemini API
+                console.log("调用 Gemini API, 密钥前缀:", apiKey.substring(0, 5) + "...");
+                
+                // 验证API密钥格式
+                if (!apiKey || apiKey.trim() === '') {
+                    throw new Error("Gemini API 密钥无效");
+                }
+                
+                const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`;
+                console.log("Gemini API 完整URL:", apiUrl);
+                
+                // 构建请求体
+                const requestBody = {
+                    contents: [{ 
+                        parts: [{ text: prompt }] 
+                    }],
+                    generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 1000
+                    }
+                };
+                
+                console.log("Gemini 请求体:", JSON.stringify(requestBody));
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody),
+                });
+                
+                console.log("Gemini API 响应状态:", response.status);
+                
+                if (!response.ok) {
+                    const data = await response.json();
+                    console.error("Gemini API 错误响应:", data);
+                    throw new Error(`Gemini API 错误: ${response.status} - ${JSON.stringify(data.error || {})}`);
+                }
+                
+                const data = await response.json();
+                
+                // 验证响应结构
+                if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+                    console.error("Gemini API 响应结构异常:", data);
+                    throw new Error("Gemini API 响应结构异常");
+                }
+                
+                text = data.candidates[0].content.parts[0].text;
+                if (!text) {
+                    console.warn("Gemini API 响应中未找到文本:", data);
+                    throw new Error("AI 响应中未找到文本");
+                }
+                
+                console.log("Gemini API 调用成功, 返回文本长度:", text.length);
+            } else if (modelType === 'custom') {
+                // 使用自定义 API
+                console.log("调用自定义 API:", customModelConfig.endpoint);
+                
+                if (!customModelConfig.apiKey) {
+                    throw new Error("API Key 未提供");
+                }
+                
+                if (!customModelConfig.endpoint) {
+                    throw new Error("API 端点 URL 未提供");
+                }
+                
+                // 构建请求体 - 完全按照 DeepSeek 示例格式
+                const requestBody = {
+                    model: customModelConfig.model || 'deepseek-chat',
+                    messages: [
+                        {"role": "system", "content": "You are a helpful assistant."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    stream: false
+                };
+                
+                console.log("请求体:", JSON.stringify(requestBody));
+                
+                // 构建请求头 - 完全按照 curl 示例格式
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${customModelConfig.apiKey}`
+                };
+                
+                console.log("请求头:", JSON.stringify(headers));
+                
+                try {
+                    const response = await fetch('https://api.deepseek.com/chat/completions', {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify(requestBody)
+                    });
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error("API 错误:", response.status, errorText);
+                        throw new Error(`API 错误 ${response.status}: ${errorText}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log("API 响应:", data);
+                    
+                    // 从响应中提取文本
+                    if (data.choices && data.choices.length > 0) {
+                        text = data.choices[0].message.content;
+                        console.log("成功提取文本");
+                    } else {
+                        throw new Error("API 响应中没有找到文本内容");
+                    }
+                } catch (error) {
+                    console.error("API 请求失败:", error);
+                    throw error;
+                }
+            }
+            
+            if (!text) {
+                console.warn("AI 模型未返回文本");
+                return "AI 模型未返回有效文本，请检查模型配置或稍后再试";
+            }
+            
+            console.log("AI 返回文本长度:", text.length);
+            return text;
+        } catch (error) {
+            console.error('调用 AI 模型接口失败:', error);
+            alert('AI 接口调用失败: ' + error.message);
+            return 'AI 接口调用失败: ' + error.message;
+        }
+    }
+
+
+    window.onload = () => {
+        renderBookList();
+    };
+  </script>
+</body>
+</html>
