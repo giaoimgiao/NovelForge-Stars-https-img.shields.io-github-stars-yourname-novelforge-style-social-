@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>后台管理界面</title>
+  <style>
+    :root {
+      --paper-color: #f5eedc;
+      --ink-color: #3a3226;
+      --accent-color: #8b572a;
+      --error-color: #e74c3c;
+    }
+
+    body {
+      font-family: 'Noto Serif SC', serif;
+      margin: 0;
+      padding: 0;
+      background: url('https://www.transparenttextures.com/patterns/cream-paper.png') var(--paper-color);
+      color: var(--ink-color);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 1rem;
+      background: rgba(245, 238, 220, 0.9);
+      box-shadow: 0 2px 8px rgba(58, 50, 38, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .nav-links {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1.5rem;
+    }
+
+    .nav-links a {
+      color: var(--accent-color);
+      text-decoration: none;
+      font-weight: 500;
+      position: relative;
+      padding: 0.25rem 0;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent-color);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    main {
+      flex: 1;
+      padding: 2rem 1rem;
+      max-width: 1000px;
+      margin: 0 auto;
+      width: 90%;
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 12px rgba(58, 50, 38, 0.1);
+      border: 1px solid rgba(139, 87, 42, 0.15);
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--accent-color);
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 1rem;
+      color: var(--ink-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1rem;
+      color: var(--ink-color);
+      background-color: #fff;
+      transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 5px rgba(139, 87, 42, 0.2);
+    }
+
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .checkbox-wrapper input[type="checkbox"] {
+      margin-right: 0.5rem;
+    }
+
+    .form-text {
+      color: #665c4f;
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+    }
+
+    .btn-container {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .btn {
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.95);
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background-color: rgba(139, 87, 42, 0.1);
+      color: var(--accent-color);
+    }
+
+    .btn-primary {
+      background-color: var(--accent-color);
+      color: #fff;
+      box-shadow: 0 3px 5px rgba(139, 87, 42, 0.3);
+    }
+
+    .btn-danger {
+      background-color: var(--error-color);
+      color: #fff;
+      box-shadow: 0 3px 5px rgba(231, 76, 60, 0.3);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+    }
+
+    th, td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(139, 87, 42, 0.1);
+    }
+
+    th {
+      background-color: rgba(139, 87, 42, 0.05);
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background-color: rgba(139, 87, 42, 0.02);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .action-btn {
+      padding: 0.4rem 0.8rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background-color 0.2s ease;
+    }
+
+    .edit-btn {
+      background-color: rgba(139, 87, 42, 0.1);
+      color: var(--accent-color);
+    }
+
+    .delete-btn {
+      background-color: rgba(231, 76, 60, 0.1);
+      color: var(--error-color);
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background-color: var(--paper-color);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      padding: 2rem;
+      transform: translateY(-20px);
+      transition: transform 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal.active .modal-content {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--ink-color);
+    }
+
+    .close-button {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--accent-color);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .close-button:hover {
+      transform: rotate(90deg);
+    }
+
+    footer {
+      background: rgba(245, 238, 220, 0.9);
+      padding: 1rem;
+      text-align: center;
+      border-top: 1px solid rgba(139, 87, 42, 0.1);
+      margin-top: auto;
+    }
+
+    .footer-text {
+      color: var(--ink-color);
+      font-size: 0.9rem;
+    }
+
+    .tabs {
+      display: flex;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(139, 87, 42, 0.1);
+    }
+
+    .tab {
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .tab.active {
+      border-bottom: 2px solid var(--accent-color);
+      color: var(--accent-color);
+      font-weight: 500;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .status-message {
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .status-success {
+      background-color: rgba(46, 204, 113, 0.1);
+      color: #27ae60;
+      border: 1px solid rgba(46, 204, 113, 0.2);
+    }
+
+    .status-error {
+      background-color: rgba(231, 76, 60, 0.1);
+      color: #e74c3c;
+      border: 1px solid rgba(231, 76, 60, 0.2);
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <nav class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="inspiration.html">灵感集</a>
+      <a href="admin.html" class="active">管理后台</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="section">
+      <h2>后台管理</h2>
+      
+      <div class="tabs">
+        <div class="tab active" data-tab="inspiration">灵感管理</div>
+        <div class="tab" data-tab="books">作品管理</div>
+        <div class="tab" data-tab="models">模型管理</div>
+        <div class="tab" data-tab="settings">系统设置</div>
+      </div>
+
+      <div id="status-message" class="status-message"></div>
+      
+      <!-- 灵感管理 -->
+      <div id="inspiration-tab" class="tab-content active">
+        <div class="btn-container" style="justify-content: flex-start; margin-bottom: 1.5rem;">
+          <button type="button" class="btn btn-primary" onclick="openAddInspirationModal()">
+            <i class="fas fa-plus"></i> 添加灵感
+          </button>
+        </div>
+
+        <table id="inspiration-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>标题</th>
+              <th>图片</th>
+              <th>描述</th>
+              <th>标签</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 灵感数据将在这里动态加载 -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- 作品管理 -->
+      <div id="books-tab" class="tab-content">
+        <div class="btn-container" style="justify-content: flex-start; margin-bottom: 1.5rem;">
+          <button type="button" class="btn btn-primary" onclick="refreshBooksData()">
+            <i class="fas fa-sync-alt"></i> 刷新数据
+          </button>
+        </div>
+
+        <h3>作品列表</h3>
+        <table id="books-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>标题</th>
+              <th>章节数</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 作品数据将在这里动态加载 -->
+          </tbody>
+        </table>
+
+        <div id="chapters-section" style="margin-top: 2rem; display: none;">
+          <h3>章节列表 - <span id="current-book-title"></span></h3>
+          <table id="chapters-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>章节标题</th>
+                <th>内容预览</th>
+                <th>创建时间</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- 章节数据将在这里动态加载 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- 系统设置 -->
+      <div id="settings-tab" class="tab-content">
+        <div class="form-group">
+          <label for="server-port" class="form-label">服务器端口</label>
+          <input type="number" class="form-control" id="server-port" value="3000">
+        </div>
+        <div class="form-group">
+          <label for="data-path" class="form-label">数据存储路径</label>
+          <input type="text" class="form-control" id="data-path" value="./data">
+        </div>
+        <div class="btn-container">
+          <button type="button" class="btn btn-primary" onclick="saveSettings()">保存设置</button>
+        </div>
+      </div>
+      
+      <!-- 模型管理 -->
+      <div id="models-tab" class="tab-content">
+        <section class="section">
+          <h3>Gemini 模型配置</h3>
+          <div class="form-group">
+            <label for="geminiName" class="form-label">模型名称</label>
+            <input type="text" class="form-control" id="geminiName" placeholder="Gemini">
+          </div>
+          <div class="form-group">
+            <label for="geminiKey" class="form-label">模型密钥（没有密钥可联系开发）</label>
+            <input type="text" class="form-control" id="geminiKey" placeholder="AIzaSyCjAyyBB684thDDZX15C31Qtcac3coNNqY">
+          </div>
+          <div class="form-group">
+            <label for="geminiModel" class="form-label">Gemini 模型版本</label>
+            <select class="form-control" id="geminiModel">
+              <option value="gemini-2.0-pro">gemini-2.0-pro (推荐)</option>
+              <option value="gemini-2.0-flash">gemini-2.0-flash (更快)</option>
+              <option value="gemini-1.5-pro">gemini-1.5-pro (旧版)</option>
+              <option value="gemini-1.0-pro">gemini-1.0-pro (旧版)</option>
+            </select>
+            <small class="form-text text-muted">注意：请勿使用 gemini-pro，该模型不存在。请选择上述可用的模型之一。</small>
+          </div>
+        </section>
+
+        <section class="section">
+          <h3>自定义模型配置</h3>
+          <div class="form-group">
+            <label for="customName" class="form-label">模型名称</label>
+            <input type="text" class="form-control" id="customName" placeholder="自定义模型">
+          </div>
+          <div class="form-group">
+            <label for="customKey" class="form-label">模型密钥</label>
+            <input type="text" class="form-control" id="customKey" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+          </div>
+          <div class="form-group">
+            <label for="customUrl" class="form-label">API URL</label>
+            <input type="text" class="form-control" id="customUrl" placeholder="https://api.openai.com/v1/completions">
+            <small class="form-text text-muted">注意：使用第三方API（如DeepSeek、Anthropic等）需要先启动本地服务器。请在项目根目录运行 start-server.bat 脚本。</small>
+          </div>
+          <div class="form-group">
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="isOpenAIFormat" checked>
+              <label for="isOpenAIFormat">使用 OpenAI 格式 (适用于兼容 OpenAI API 的模型)</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="customModel" class="form-label">模型名称 (OpenAI 格式)</label>
+            <input type="text" class="form-control" id="customModel" placeholder="gpt-3.5-turbo">
+            <small class="form-text text-muted">仅在使用 OpenAI 格式时需要</small>
+          </div>
+        </section>
+
+        <div class="btn-container">
+          <button type="button" class="btn btn-primary" onclick="saveModelConfig()">保存模型配置</button>
+          <button type="button" class="btn btn-danger" onclick="clearModelConfig()">清除模型配置</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 添加/编辑灵感弹窗 -->
+  <div class="modal" id="inspiration-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="inspiration-modal-title">添加灵感</h5>
+        <button type="button" class="close-button" onclick="closeInspirationModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="inspiration-form">
+        <input type="hidden" id="inspiration-id">
+        <div class="form-group">
+          <label for="inspiration-title" class="form-label">标题</label>
+          <input type="text" class="form-control" id="inspiration-title" required>
+        </div>
+        <div class="form-group">
+          <label for="inspiration-image" class="form-label">图片路径</label>
+          <input type="text" class="form-control" id="inspiration-image" placeholder="例如: image.png">
+        </div>
+        <div class="form-group">
+          <label for="inspiration-description" class="form-label">描述</label>
+          <textarea class="form-control" id="inspiration-description" rows="5" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="inspiration-tags" class="form-label">标签（用逗号分隔）</label>
+          <input type="text" class="form-control" id="inspiration-tags" placeholder="例如: 仙侠,穿越,系统">
+        </div>
+        <div class="btn-container">
+          <button type="button" class="btn btn-secondary" onclick="closeInspirationModal()">取消</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<footer>
+    <p class="footer-text">© 群聊  - 616431371</p>
+  </footer>
+
+  <script>
+    // 全局变量
+    let inspirationData = [];
+    let booksData = [];
+    let currentBookId = null;
+    let chaptersData = [];
+    const API_BASE_URL = ''; // 空字符串表示相对路径，使用当前域名
+    let apiAvailable = false; // 标记API是否可用
+
+    // 页面加载时初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      // 检查API是否可用
+      checkApiAvailability();
+      
+      // 初始化标签页
+      initTabs();
+      
+      // 加载灵感数据
+      loadInspirationData();
+      
+      // 加载作品数据
+      loadBooksData();
+      
+      // 加载模型配置
+      loadModelConfig();
+      
+      // 初始化表单提交事件
+      document.getElementById('inspiration-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveInspiration();
+      });
+      
+      // 监听模型名称输入，自动补全URL
+      document.getElementById('customModel').addEventListener('input', function() {
+        const modelName = this.value.trim();
+        const customUrlInput = document.getElementById('customUrl');
+        
+        // Don't automatically modify the URL based on model name
+        // Let the user enter their own endpoint URL
+        
+        // Only enforce OpenAI format by default
+        document.getElementById('isOpenAIFormat').checked = true;
+      });
+    });
+
+    // 检查API是否可用
+    async function checkApiAvailability() {
+      try {
+        // 尝试发送一个简单的请求来检查API是否可用
+        // 设置超时为2秒，避免长时间等待
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        
+        const response = await fetch(`${API_BASE_URL}/api/health`, {
+          method: 'GET',
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        apiAvailable = response.ok;
+        
+        if (apiAvailable) {
+          console.log('API可用，将使用后端服务');
+        } else {
+          console.log('API响应异常，将使用本地存储');
+        }
+      } catch (error) {
+        console.log('API不可用，将使用本地存储');
+        apiAvailable = false;
+      }
+    }
+
+    // 初始化标签页
+    function initTabs() {
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // 移除所有标签页的活动状态
+          tabs.forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+          
+          // 设置当前标签页为活动状态
+          this.classList.add('active');
+          const tabId = this.getAttribute('data-tab');
+          document.getElementById(`${tabId}-tab`).classList.add('active');
+          
+          // 如果切换到作品管理标签，刷新作品数据
+          if (tabId === 'books') {
+            loadBooksData();
+          }
+        });
+      });
+    }
+
+    // 加载灵感数据
+    async function loadInspirationData() {
+      // 如果API不可用，直接从localStorage加载
+      if (!apiAvailable) {
+        loadInspirationFromLocalStorage();
+        return;
+      }
+      
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        
+        const response = await fetch(`${API_BASE_URL}/api/inspiration`, {
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error('加载灵感数据失败');
+        }
+        
+        inspirationData = await response.json();
+        renderInspirationTable();
+        showStatusMessage('灵感数据加载成功', 'success');
+      } catch (error) {
+        console.log('从API加载灵感数据失败，将使用本地存储');
+        loadInspirationFromLocalStorage();
+      }
+    }
+    
+    // 从localStorage加载灵感数据
+    function loadInspirationFromLocalStorage() {
+      try {
+        // 从localStorage获取灵感数据
+        const localInspirationData = localStorage.getItem('inspirationData');
+        if (localInspirationData) {
+          inspirationData = JSON.parse(localInspirationData);
+          if (!Array.isArray(inspirationData)) {
+            inspirationData = [];
+          }
+          renderInspirationTable();
+          showStatusMessage('已从本地存储加载灵感数据', 'success');
+        } else {
+          // 初始化空数组并保存到localStorage
+          inspirationData = [];
+          localStorage.setItem('inspirationData', JSON.stringify(inspirationData));
+          renderInspirationTable();
+          showStatusMessage('初始化灵感数据存储', 'success');
+        }
+      } catch (e) {
+        console.error('解析本地灵感数据失败', e);
+        inspirationData = [];
+        renderInspirationTable();
+        showStatusMessage('加载灵感数据失败', 'error');
+      }
+    }
+
+    // 加载作品数据
+    function loadBooksData() {
+      try {
+        // 从localStorage获取书籍数据
+        const localBooksData = localStorage.getItem('books');
+        if (localBooksData) {
+          booksData = JSON.parse(localBooksData);
+          renderBooksTable();
+          showStatusMessage('已从本地存储加载作品数据', 'success');
+        } else {
+          booksData = [];
+          renderBooksTable();
+          showStatusMessage('本地存储中没有作品数据', 'error');
+        }
+      } catch (error) {
+        console.error('加载作品数据失败', error);
+        showStatusMessage('加载作品数据失败: ' + error.message, 'error');
+        booksData = [];
+        renderBooksTable();
+      }
+    }
+
+    // 刷新作品数据
+    function refreshBooksData() {
+      loadBooksData();
+    }
+
+    // 加载章节数据
+    function loadChaptersData(bookId, bookTitle) {
+      try {
+        currentBookId = bookId;
+        document.getElementById('current-book-title').textContent = bookTitle;
+        document.getElementById('chapters-section').style.display = 'block';
+        
+        // 从localStorage获取章节数据
+        const chaptersKey = `chapters_${bookId}`;
+        const localChaptersData = localStorage.getItem(chaptersKey);
+        
+        if (localChaptersData) {
+          chaptersData = JSON.parse(localChaptersData);
+          renderChaptersTable();
+          showStatusMessage(`已加载《${bookTitle}》的章节数据`, 'success');
+        } else {
+          chaptersData = [];
+          renderChaptersTable();
+          showStatusMessage(`《${bookTitle}》没有章节数据`, 'error');
+        }
+      } catch (error) {
+        console.error('加载章节数据失败', error);
+        showStatusMessage('加载章节数据失败: ' + error.message, 'error');
+        chaptersData = [];
+        renderChaptersTable();
+      }
+    }
+
+    // 渲染灵感表格
+    function renderInspirationTable() {
+      const tableBody = document.querySelector('#inspiration-table tbody');
+      tableBody.innerHTML = '';
+      
+      if (inspirationData.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="6" style="text-align: center;">暂无灵感数据</td>`;
+        tableBody.appendChild(row);
+        return;
+      }
+      
+      inspirationData.forEach(inspiration => {
+        const row = document.createElement('tr');
+        
+        // 截断描述，只显示前30个字符
+        const shortDescription = inspiration.description 
+          ? (inspiration.description.length > 30 ? inspiration.description.substring(0, 30) + '...' : inspiration.description)
+          : '';
+        
+        // 格式化标签显示
+        const tagsDisplay = Array.isArray(inspiration.tags) 
+          ? inspiration.tags.slice(0, 3).join(', ') + (inspiration.tags.length > 3 ? '...' : '')
+          : '';
+        
+        // 图片预览
+        const imagePreview = inspiration.image 
+          ? `<img src="${inspiration.image}" alt="预览" style="max-width: 50px; max-height: 50px;" onerror="this.src='placeholder.jpg'; this.onerror=null;">`
+          : '无图片';
+        
+        // 使用data属性存储ID，而不是直接在onclick中传递
+        row.innerHTML = `
+          <td>${inspiration.id}</td>
+          <td>${inspiration.title}</td>
+          <td>${imagePreview}</td>
+          <td title="${inspiration.description || ''}">${shortDescription}</td>
+          <td title="${Array.isArray(inspiration.tags) ? inspiration.tags.join(', ') : ''}">${tagsDisplay}</td>
+          <td>
+            <div class="action-buttons">
+              <button class="action-btn edit-btn" data-id="${inspiration.id}">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="action-btn delete-btn" data-id="${inspiration.id}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        
+        // 添加事件监听器
+        const editBtn = row.querySelector('.edit-btn');
+        const deleteBtn = row.querySelector('.delete-btn');
+        
+        editBtn.addEventListener('click', function() {
+          const id = this.getAttribute('data-id');
+          editInspiration(id);
+        });
+        
+        deleteBtn.addEventListener('click', function() {
+          const id = this.getAttribute('data-id');
+          deleteInspiration(id);
+        });
+        
+        tableBody.appendChild(row);
+      });
+    }
+
+    // 渲染作品表格
+    function renderBooksTable() {
+      const tableBody = document.querySelector('#books-table tbody');
+      tableBody.innerHTML = '';
+      
+      if (booksData.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="4" style="text-align: center;">暂无作品数据</td>`;
+        tableBody.appendChild(row);
+        return;
+      }
+      
+      booksData.forEach(book => {
+        const row = document.createElement('tr');
+        
+        // 获取章节数量
+        const chaptersKey = `chapters_${book.id}`;
+        let chaptersCount = 0;
+        try {
+          const chaptersData = localStorage.getItem(chaptersKey);
+          if (chaptersData) {
+            chaptersCount = JSON.parse(chaptersData).length;
+          }
+        } catch (e) {
+          console.error(`获取作品 ${book.id} 的章节数量失败`, e);
+        }
+        
+        row.innerHTML = `
+          <td>${book.id}</td>
+          <td>${book.title}</td>
+          <td>${chaptersCount}</td>
+          <td>
+            <div class="action-buttons">
+              <button class="action-btn edit-btn" onclick="viewBookChapters('${book.id}', '${book.title}')">
+                <i class="fas fa-list"></i> 查看章节
+              </button>
+              <button class="action-btn delete-btn" onclick="deleteBook('${book.id}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        
+        tableBody.appendChild(row);
+      });
+    }
+
+    // 渲染章节表格
+    function renderChaptersTable() {
+      const tableBody = document.querySelector('#chapters-table tbody');
+      tableBody.innerHTML = '';
+      
+      if (chaptersData.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="5" style="text-align: center;">暂无章节数据</td>`;
+        tableBody.appendChild(row);
+        return;
+      }
+      
+      chaptersData.forEach(chapter => {
+        const row = document.createElement('tr');
+        
+        // 截断内容，只显示前50个字符
+        const shortContent = chapter.content 
+          ? (chapter.content.length > 50 ? chapter.content.substring(0, 50) + '...' : chapter.content)
+          : '';
+        
+        // 格式化创建时间
+        const createdAt = chapter.createTime 
+          ? new Date(chapter.createTime).toLocaleString() 
+          : '未知';
+        
+        row.innerHTML = `
+          <td>${chapter.id}</td>
+          <td>${chapter.title}</td>
+          <td title="${chapter.content || ''}">${shortContent}</td>
+          <td>${createdAt}</td>
+          <td>
+            <div class="action-buttons">
+              <button class="action-btn edit-btn" onclick="viewChapterContent('${chapter.id}')">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="action-btn delete-btn" onclick="deleteChapter('${chapter.id}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        
+        tableBody.appendChild(row);
+      });
+    }
+
+    // 查看作品章节
+    function viewBookChapters(bookId, bookTitle) {
+      loadChaptersData(bookId, bookTitle);
+    }
+
+    // 查看章节内容
+    function viewChapterContent(chapterId) {
+      const chapter = chaptersData.find(c => c.id === chapterId);
+      if (!chapter) {
+        showStatusMessage('找不到章节内容', 'error');
+        return;
+      }
+      
+      alert(`章节标题: ${chapter.title}\n\n${chapter.content}`);
+    }
+
+    // 删除作品
+    function deleteBook(bookId) {
+      if (!confirm('确定要删除这部作品吗？此操作不可撤销，将同时删除所有章节数据。')) {
+        return;
+      }
+      
+      try {
+        // 从localStorage中删除作品数据
+        let books = JSON.parse(localStorage.getItem('books')) || [];
+        books = books.filter(book => book.id !== bookId);
+        localStorage.setItem('books', JSON.stringify(books));
+        
+        // 删除相关的章节数据
+        const chaptersKey = `chapters_${bookId}`;
+        localStorage.removeItem(chaptersKey);
+        
+        // 删除当前章节ID
+        localStorage.removeItem(`currentChapter_${bookId}`);
+        
+        // 删除章节内容
+        localStorage.removeItem(`chapterContent_${bookId}`);
+        
+        // 刷新作品列表
+        loadBooksData();
+        
+        // 如果当前正在查看该作品的章节，则隐藏章节区域
+        if (currentBookId === bookId) {
+          document.getElementById('chapters-section').style.display = 'none';
+          currentBookId = null;
+        }
+        
+        showStatusMessage('作品删除成功', 'success');
+      } catch (error) {
+        console.error('删除作品失败', error);
+        showStatusMessage('删除作品失败: ' + error.message, 'error');
+      }
+    }
+
+    // 删除章节
+    function deleteChapter(chapterId) {
+      if (!confirm('确定要删除这个章节吗？此操作不可撤销。')) {
+        return;
+      }
+      
+      try {
+        if (!currentBookId) {
+          showStatusMessage('无法确定当前作品', 'error');
+          return;
+        }
+        
+        // 从localStorage中删除章节数据
+        const chaptersKey = `chapters_${currentBookId}`;
+        let chapters = JSON.parse(localStorage.getItem(chaptersKey)) || [];
+        chapters = chapters.filter(chapter => chapter.id !== chapterId);
+        localStorage.setItem(chaptersKey, JSON.stringify(chapters));
+        
+        // 如果删除的是当前章节，则清除当前章节ID
+        const currentChapterId = localStorage.getItem(`currentChapter_${currentBookId}`);
+        if (currentChapterId === chapterId) {
+          localStorage.removeItem(`currentChapter_${currentBookId}`);
+        }
+        
+        // 刷新章节列表
+        chaptersData = chapters;
+        renderChaptersTable();
+        
+        // 刷新作品列表（更新章节数量）
+        renderBooksTable();
+        
+        showStatusMessage('章节删除成功', 'success');
+      } catch (error) {
+        console.error('删除章节失败', error);
+        showStatusMessage('删除章节失败: ' + error.message, 'error');
+      }
+    }
+
+    // 打开添加灵感弹窗
+    function openAddInspirationModal() {
+      document.getElementById('inspiration-modal-title').textContent = '添加灵感';
+      document.getElementById('inspiration-id').value = '';
+      document.getElementById('inspiration-title').value = '';
+      document.getElementById('inspiration-image').value = '';
+      document.getElementById('inspiration-description').value = '';
+      document.getElementById('inspiration-tags').value = '';
+      
+      document.getElementById('inspiration-modal').classList.add('active');
+    }
+
+    // 打开编辑灵感弹窗
+    function editInspiration(id) {
+      console.log('编辑灵感:', id);
+      
+      // 确保ID是字符串
+      id = String(id);
+      
+      // 查找灵感数据
+      const inspiration = inspirationData.find(item => String(item.id) === id);
+      
+      if (!inspiration) {
+        console.error('找不到灵感:', id);
+        console.log('当前灵感数据:', inspirationData);
+        showStatusMessage('找不到要编辑的灵感', 'error');
+        return;
+      }
+      
+      document.getElementById('inspiration-modal-title').textContent = '编辑灵感';
+      document.getElementById('inspiration-id').value = inspiration.id;
+      document.getElementById('inspiration-title').value = inspiration.title || '';
+      document.getElementById('inspiration-image').value = inspiration.image || '';
+      document.getElementById('inspiration-description').value = inspiration.description || '';
+      document.getElementById('inspiration-tags').value = Array.isArray(inspiration.tags) ? inspiration.tags.join(', ') : '';
+      
+      document.getElementById('inspiration-modal').classList.add('active');
+    }
+
+    // 关闭灵感弹窗
+    function closeInspirationModal() {
+      document.getElementById('inspiration-modal').classList.remove('active');
+    }
+
+    // 保存灵感
+    async function saveInspiration() {
+      const id = document.getElementById('inspiration-id').value;
+      const title = document.getElementById('inspiration-title').value;
+      const image = document.getElementById('inspiration-image').value;
+      const description = document.getElementById('inspiration-description').value;
+      const tagsInput = document.getElementById('inspiration-tags').value;
+      
+      // 处理标签，将逗号分隔的字符串转换为数组
+      const tags = tagsInput.split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0);
+      
+      const inspirationItem = {
+        title,
+        image,
+        description,
+        tags
+      };
+      
+      try {
+        let apiSuccess = false;
+        
+        // 如果API可用，尝试通过API保存
+        if (apiAvailable) {
+          if (id) {
+            // 更新现有灵感
+            inspirationItem.id = id;
+            try {
+              const response = await fetch(`${API_BASE_URL}/api/inspiration/${id}`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(inspirationItem)
+              });
+              apiSuccess = response.ok;
+            } catch (e) {
+              console.log('API更新灵感失败，将使用本地存储');
+              apiSuccess = false;
+            }
+          } else {
+            // 添加新灵感
+            inspirationItem.id = generateId();
+            try {
+              const response = await fetch(`${API_BASE_URL}/api/inspiration`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(inspirationItem)
+              });
+              apiSuccess = response.ok;
+            } catch (e) {
+              console.log('API添加灵感失败，将使用本地存储');
+              apiSuccess = false;
+            }
+          }
+        }
+        
+        if (apiAvailable && apiSuccess) {
+          closeInspirationModal();
+          loadInspirationData();
+          showStatusMessage(id ? '灵感更新成功' : '灵感添加成功', 'success');
+          return;
+        }
+        
+        // 保存到localStorage
+        saveInspirationToLocalStorage(inspirationItem, id);
+      } catch (error) {
+        console.error('保存灵感失败:', error);
+        showStatusMessage('保存灵感失败: ' + error.message, 'error');
+        
+        // 尝试保存到localStorage
+        saveInspirationToLocalStorage(inspirationItem, id);
+      }
+    }
+    
+    // 保存灵感到localStorage
+    function saveInspirationToLocalStorage(inspirationItem, id) {
+      try {
+        // 从localStorage获取现有灵感数据
+        let localInspirationData = [];
+        const existingData = localStorage.getItem('inspirationData');
+        
+        if (existingData) {
+          localInspirationData = JSON.parse(existingData);
+          // 确保是数组
+          if (!Array.isArray(localInspirationData)) {
+            localInspirationData = [];
+          }
+        }
+        
+        if (id) {
+          // 确保ID是字符串
+          id = String(id);
+          
+          // 更新现有灵感
+          inspirationItem.id = id;
+          const index = localInspirationData.findIndex(item => String(item.id) === id);
+          if (index !== -1) {
+            localInspirationData[index] = inspirationItem;
+          } else {
+            // 如果在本地存储中找不到，则添加
+            localInspirationData.push(inspirationItem);
+          }
+        } else {
+          // 添加新灵感
+          inspirationItem.id = generateId();
+          localInspirationData.push(inspirationItem);
+        }
+        
+        // 保存回localStorage
+        localStorage.setItem('inspirationData', JSON.stringify(localInspirationData));
+        
+        // 更新本地数据
+        inspirationData = localInspirationData;
+        renderInspirationTable();
+        closeInspirationModal();
+        showStatusMessage(id ? '灵感已保存到本地存储' : '灵感已添加到本地存储', 'success');
+      } catch (e) {
+        console.error('保存灵感到本地存储失败', e);
+        showStatusMessage('保存灵感失败', 'error');
+      }
+    }
+
+    // 删除灵感
+    async function deleteInspiration(id) {
+      console.log('删除灵感:', id);
+      
+      // 确保ID是字符串
+      id = String(id);
+      
+      // 先检查灵感是否存在
+      const inspiration = inspirationData.find(item => String(item.id) === id);
+      if (!inspiration) {
+        console.error('找不到要删除的灵感:', id);
+        console.log('当前灵感数据:', inspirationData);
+        showStatusMessage('找不到要删除的灵感', 'error');
+        return;
+      }
+      
+      if (!confirm(`确定要删除灵感"${inspiration.title}"吗？此操作不可撤销。`)) {
+        return;
+      }
+      
+      try {
+        let apiSuccess = false;
+        
+        // 如果API可用，尝试通过API删除
+        if (apiAvailable) {
+          try {
+            const response = await fetch(`${API_BASE_URL}/api/inspiration/${id}`, {
+              method: 'DELETE'
+            });
+            apiSuccess = response.ok;
+          } catch (e) {
+            console.log('API删除灵感失败，将使用本地存储');
+            apiSuccess = false;
+          }
+        }
+        
+        if (apiAvailable && apiSuccess) {
+          loadInspirationData();
+          showStatusMessage('灵感删除成功', 'success');
+          return;
+        }
+        
+        // 从localStorage删除
+        deleteInspirationFromLocalStorage(id);
+      } catch (error) {
+        console.error('删除灵感失败:', error);
+        showStatusMessage('删除灵感失败: ' + error.message, 'error');
+        
+        // 尝试从localStorage删除
+        deleteInspirationFromLocalStorage(id);
+      }
+    }
+    
+    // 从localStorage删除灵感
+    function deleteInspirationFromLocalStorage(id) {
+      try {
+        // 确保ID是字符串
+        id = String(id);
+        
+        // 从localStorage获取现有灵感数据
+        let localInspirationData = [];
+        const existingData = localStorage.getItem('inspirationData');
+        
+        if (existingData) {
+          localInspirationData = JSON.parse(existingData);
+          // 确保是数组
+          if (!Array.isArray(localInspirationData)) {
+            localInspirationData = [];
+          }
+        }
+        
+        // 过滤掉要删除的灵感
+        const originalLength = localInspirationData.length;
+        localInspirationData = localInspirationData.filter(item => String(item.id) !== id);
+        
+        if (originalLength === localInspirationData.length) {
+          console.error('在本地存储中找不到要删除的灵感:', id);
+          showStatusMessage('找不到要删除的灵感', 'error');
+          return;
+        }
+        
+        // 保存回localStorage
+        localStorage.setItem('inspirationData', JSON.stringify(localInspirationData));
+        
+        // 更新本地数据
+        inspirationData = localInspirationData;
+        renderInspirationTable();
+        showStatusMessage('灵感已从本地存储中删除', 'success');
+      } catch (e) {
+        console.error('从本地存储删除灵感失败', e);
+        showStatusMessage('删除灵感失败', 'error');
+      }
+    }
+
+    // 保存系统设置
+    function saveSettings() {
+      const port = document.getElementById('server-port').value;
+      const dataPath = document.getElementById('data-path').value;
+      
+      // 这里可以添加保存设置的逻辑
+      
+      showStatusMessage('设置保存成功', 'success');
+    }
+
+    // 显示状态消息
+    function showStatusMessage(message, type) {
+      const statusElement = document.getElementById('status-message');
+      statusElement.textContent = message;
+      statusElement.className = 'status-message';
+      statusElement.classList.add(`status-${type}`);
+      statusElement.style.display = 'block';
+      
+      // 3秒后自动隐藏消息
+      setTimeout(() => {
+        statusElement.style.display = 'none';
+      }, 3000);
+    }
+
+    // 生成唯一ID
+    function generateId() {
+      return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    }
+
+    // 加载模型配置
+    function loadModelConfig() {
+      try {
+        // 从 localStorage 中加载 Gemini 配置
+        const modelConfigString = localStorage.getItem('modelConfig');
+
+        if (modelConfigString) {
+          try {
+            const modelConfig = JSON.parse(modelConfigString);
+            if (modelConfig && modelConfig.gemini) {
+              document.getElementById('geminiName').value = modelConfig.gemini.name || '';
+              document.getElementById('geminiKey').value = modelConfig.gemini.key || '';
+              
+              // 加载模型版本
+              if (modelConfig.gemini.model) {
+                const modelSelect = document.getElementById('geminiModel');
+                // 检查是否有匹配的选项
+                let found = false;
+                for (let i = 0; i < modelSelect.options.length; i++) {
+                  if (modelSelect.options[i].value === modelConfig.gemini.model) {
+                    modelSelect.selectedIndex = i;
+                    found = true;
+                    break;
+                  }
+                }
+                
+                // 如果没有匹配的选项，但有模型值，添加一个新选项
+                if (!found && modelConfig.gemini.model) {
+                  const option = document.createElement('option');
+                  option.value = modelConfig.gemini.model;
+                  option.text = modelConfig.gemini.model;
+                  modelSelect.add(option);
+                  modelSelect.value = modelConfig.gemini.model;
+                }
+              }
+            }
+          } catch (error) {
+            console.error("Error loading Gemini configuration:", error);
+            showStatusMessage('加载Gemini配置失败', 'error');
+          }
+        }
+
+        // 加载自定义模型配置
+        // 遍历 localStorage 查找自定义模型
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('customModel-')) {
+            try {
+              const customModelData = JSON.parse(localStorage.getItem(key));
+              const customModelName = key.replace('customModel-', '');
+              
+              if (customModelData) {
+                document.getElementById('customName').value = customModelName;
+                document.getElementById('customKey').value = customModelData.apiKey || '';
+                document.getElementById('customUrl').value = customModelData.endpoint || '';
+                
+                // 加载 OpenAI 格式设置
+                const isOpenAIFormat = customModelData.format === 'openai';
+                document.getElementById('isOpenAIFormat').checked = isOpenAIFormat;
+                
+                // 加载模型名称
+                if (customModelData.model) {
+                  document.getElementById('customModel').value = customModelData.model;
+                } else {
+                  document.getElementById('customModel').value = '';
+                }
+                
+                break; // 目前只显示第一个找到的自定义模型
+              }
+            } catch (error) {
+              console.error("Error loading custom model configuration:", error);
+            }
+          }
+        }
+        
+        showStatusMessage('模型配置加载成功', 'success');
+      } catch (error) {
+        console.error('加载模型配置失败', error);
+        showStatusMessage('加载模型配置失败', 'error');
+      }
+    }
+
+    // 保存模型配置
+    function saveModelConfig() {
+      try {
+        const geminiName = document.getElementById('geminiName').value;
+        const geminiKey = document.getElementById('geminiKey').value;
+        const geminiModel = document.getElementById('geminiModel').value;
+        const customName = document.getElementById('customName').value;
+        const customKey = document.getElementById('customKey').value;
+        const customUrl = document.getElementById('customUrl').value.trim();
+        const customModel = document.getElementById('customModel').value.trim();
+
+        // Gemini配置存储
+        const geminiConfig = {
+          name: geminiName,
+          key: geminiKey,
+          model: geminiModel // 使用用户选择的模型版本
+        };
+        localStorage.setItem('modelConfig', JSON.stringify({ gemini: geminiConfig }));
+
+        // Custom模型配置存储
+        if (customName && customKey && customUrl) {
+          console.log("保存自定义模型:", customName, "URL:", customUrl, "模型:", customModel);
+          
+          // 简化配置，只保存必要的字段
+          const customConfig = { 
+            apiKey: customKey, 
+            endpoint: customUrl,
+            model: customModel || 'deepseek-chat'
+          };
+          
+          console.log("保存模型配置:", JSON.stringify(customConfig));
+          localStorage.setItem(`customModel-${customName}`, JSON.stringify(customConfig));
+          showStatusMessage('模型配置保存成功', 'success');
+        } else {
+          showStatusMessage('请填写所有必需的字段：模型名称、API Key 和端点 URL', 'error');
+        }
+      } catch (error) {
+        console.error('保存模型配置失败', error);
+        showStatusMessage('保存模型配置失败: ' + error.message, 'error');
+      }
+    }
+
+    // 清除模型配置
+    function clearModelConfig() {
+      // 询问用户是否确定
+      if (confirm("确定要清除所有模型配置吗？此操作不可撤销！")) {
+        try {
+          // 遍历 localStorage 并删除所有模型配置相关的条目
+          for (let i = localStorage.length - 1; i >= 0; i--) {
+            const key = localStorage.key(i);
+            // 检查 key 是否与模型配置相关
+            if (key === 'modelConfig' || key.startsWith('customModel-')) {
+              localStorage.removeItem(key);
+            }
+          }
+
+          // 清空输入框
+          document.getElementById('geminiName').value = '';
+          document.getElementById('geminiKey').value = '';
+          document.getElementById('customName').value = '';
+          document.getElementById('customKey').value = '';
+          document.getElementById('customUrl').value = '';
+          document.getElementById('isOpenAIFormat').checked = true; // 重置为默认值
+          document.getElementById('customModel').value = '';
+
+          showStatusMessage('模型配置已清除', 'success');
+        } catch (error) {
+          console.error('清除模型配置失败', error);
+          showStatusMessage('清除模型配置失败: ' + error.message, 'error');
+        }
+      }
+    }
+  </script>
+</body>
+</html> 
