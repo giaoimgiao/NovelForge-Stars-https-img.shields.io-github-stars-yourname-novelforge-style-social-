@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>创作中心</title>
+  <!-- 引入字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+  <!-- 引入Font Awesome图标 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --paper-color: #f5eedc;
+      --ink-color: #3a3226;
+      --accent-color: #8b572a;
+      --error-color: #e74c3c;
+      --success-color: #2ecc71;
+      --warning-color: #f1c40f;
+      --border-color: rgba(139, 87, 42, 0.3);
+      --shadow-color: rgba(58, 50, 38, 0.1);
+      --card-bg-color: #fff;
+      --card-hover-bg: #f9f4e8;
+    }
+
+    body {
+      font-family: 'Noto Serif SC', serif;
+      margin: 0;
+      padding: 0;
+      background: url('https://www.transparenttextures.com/patterns/cream-paper.png') var(--paper-color);
+      color: var(--ink-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 导航栏样式 */
+    header {
+      padding: 1rem;
+      background: rgba(245, 238, 220, 0.95);
+      box-shadow: 0 2px 8px var(--shadow-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-links {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1.5rem;
+    }
+
+    .nav-links a {
+      color: var(--accent-color);
+      text-decoration: none;
+      font-weight: 500;
+      position: relative;
+      padding: 0.25rem 0;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent-color);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    /* 主内容区域 */
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .page-title {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 1.8rem;
+      color: var(--accent-color);
+      position: relative;
+    }
+
+    .page-title::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: var(--accent-color);
+      border-radius: 3px;
+    }
+
+    /* 搜索和过滤区域 */
+    .search-filter-container {
+      margin-bottom: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px var(--shadow-color);
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 0.8rem 1rem 0.8rem 2.5rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 1rem;
+      background-color: white;
+      transition: all 0.3s;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px rgba(139, 87, 42, 0.2);
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 0.8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--accent-color);
+    }
+
+    .filter-options {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--ink-color);
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .filter-btn:hover {
+      background-color: var(--card-hover-bg);
+      border-color: var(--accent-color);
+    }
+
+    .filter-btn.active {
+      background-color: var(--accent-color);
+      color: white;
+      border-color: var(--accent-color);
+    }
+
+    /* 灵感卡片网格布局 */
+    .inspiration-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .inspiration-card {
+      background: var(--card-bg-color);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px var(--shadow-color);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      border: 1px solid var(--border-color);
+    }
+
+    .inspiration-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(58, 50, 38, 0.15);
+    }
+
+    .card-image {
+      height: 180px;
+      background-size: cover;
+      background-position: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .card-content {
+      padding: 1.2rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-title {
+      margin: 0 0 0.8rem 0;
+      font-size: 1.2rem;
+      color: var(--accent-color);
+      line-height: 1.3;
+    }
+
+    .card-description {
+      margin: 0 0 1rem 0;
+      font-size: 0.95rem;
+      color: var(--ink-color);
+      line-height: 1.5;
+      flex: 1;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: auto;
+    }
+
+    .card-tag {
+      background: rgba(139, 87, 42, 0.1);
+      color: var(--accent-color);
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
+    .card-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1rem;
+      padding-top: 0.8rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .card-btn {
+      background: none;
+      border: none;
+      color: var(--accent-color);
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .card-btn:hover {
+      background: rgba(139, 87, 42, 0.1);
+    }
+
+    /* 移动端折叠卡片样式 */
+    .collapsible-card {
+      display: none; /* 默认在桌面版隐藏 */
+    }
+
+    .collapsible-header {
+      padding: 1rem;
+      background: var(--card-bg-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .collapsible-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .collapsible-card.expanded .collapsible-content {
+      max-height: 500px; /* 展开时的最大高度 */
+    }
+
+    /* 分页控件 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 2rem;
+    }
+
+    .pagination-btn {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background: white;
+      color: var(--ink-color);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pagination-btn:hover {
+      background: var(--card-hover-bg);
+    }
+
+    .pagination-btn.active {
+      background: var(--accent-color);
+      color: white;
+      border-color: var(--accent-color);
+    }
+
+    /* 页脚样式 */
+    footer {
+      background: rgba(245, 238, 220, 0.9);
+      padding: 1rem;
+      text-align: center;
+      border-top: 1px solid rgba(139, 87, 42, 0.1);
+      margin-top: auto;
+    }
+
+    .footer-nav {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+    }
+
+    .footer-nav a {
+      color: var(--accent-color);
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .footer-nav i {
+      font-size: 1.2rem;
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 1rem;
+      }
+
+      .search-filter-container {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .filter-options {
+        justify-content: center;
+      }
+
+      /* 隐藏网格布局，显示折叠卡片 */
+      .inspiration-grid {
+        display: none;
+      }
+
+      .collapsible-card {
+        display: block;
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px var(--shadow-color);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="nav-links">
+      <a href="index.html">草稿箱</a>
+      <a href="index.html">作品库</a>
+      <a href="inspiration.html">灵感集</a>
+    </nav>
+  </header>
+
+  <main class="main-content">
+    <h1 class="page-title">创作中心</h1>
+
+    <!-- 搜索和过滤区域 -->
+    <div class="search-filter-container">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="搜索灵感、标签或关键词...">
+      </div>
+      <div class="filter-options">
+        <button class="filter-btn active"><i class="fas fa-th"></i> 全部</button>
+        <button class="filter-btn"><i class="fas fa-star"></i> 收藏</button>
+        <button class="filter-btn"><i class="fas fa-fire"></i> 热门</button>
+        <button class="filter-btn"><i class="fas fa-clock"></i> 最新</button>
+      </div>
+    </div>
+
+    <!-- 桌面版网格布局 -->
+    <div class="inspiration-grid">
+      <!-- 灵感卡片示例 -->
+      <div class="inspiration-card">
+        <div class="card-image" style="background-image: url('1740858477618.png')"></div>
+        <div class="card-content">
+          <h3 class="card-title">诡秘修仙:唯一修真者的成神路</h3>
+          <p class="card-description">现代社畜陈玄穿越修仙界苦修五百年成就化神，飞升雷劫中竟坠入诡秘世界。身怀《太虚混沌诀》与储物戒中囤积的仙丹法宝，发现此界非凡特性竟与修仙体系相互克制。</p>
+          <div class="card-tags">
+            <span class="card-tag">诡秘同人</span>
+            <span class="card-tag">跨界二穿</span>
+            <span class="card-tag">仙侠</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn"><i class="far fa-star"></i> 收藏</button>
+            <button class="card-btn"><i class="fas fa-pen"></i> 使用</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="inspiration-card">
+        <div class="card-image" style="background-image: url('2.png')"></div>
+        <div class="card-content">
+          <h3 class="card-title">让十年老兵穿进病娇游戏求生</h3>
+          <p class="card-description">李明因使用修改器开挂，将某病娇游戏的女主好感全部改为【9999+】本以为会就此通关，然而却引发了穿越事件。他发现自己身处《驯妃风云录》游戏世界，面对五位病娇师姐的恐怖追求。</p>
+          <div class="card-tags">
+            <span class="card-tag">多美女</span>
+            <span class="card-tag">病娇</span>
+            <span class="card-tag">仙侠</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn"><i class="far fa-star"></i> 收藏</button>
+            <button class="card-btn"><i class="fas fa-pen"></i> 使用</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="inspiration-card">
+        <div class="card-image" style="background-image: url('1740858137319.png')"></div>
+        <div class="card-content">
+          <h3 class="card-title">直播破规则：我骚操作吓懵全网</h3>
+          <p class="card-description">林墨被拉进诡异直播间，规则提示：【午夜必须闭眼】当其他玩家战战兢兢闭目等死时，他反手掏出VR眼镜直播看鬼：'睁眼的又不是我本体～'</p>
+          <div class="card-tags">
+            <span class="card-tag">规则怪谈</span>
+            <span class="card-tag">直播整活</span>
+            <span class="card-tag">反向操作</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn"><i class="far fa-star"></i> 收藏</button>
+            <button class="card-btn"><i class="fas fa-pen"></i> 使用</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="inspiration-card">
+        <div class="card-image" style="background-image: url('9.png')"></div>
+        <div class="card-content">
+          <h3 class="card-title">科举逆袭：女扮男装后我权倾朝野</h3>
+          <p class="card-description">穿越成侯府假嫡子，沈清欢绑定科举逆袭系统。用微积分解田亩难题，拿《资本论》怼迂腐大儒。当皇帝要求写治国策时，她直接甩出五年计划。</p>
+          <div class="card-tags">
+            <span class="card-tag">女扮男装</span>
+            <span class="card-tag">科举爽文</span>
+            <span class="card-tag">朝堂权谋</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn"><i class="far fa-star"></i> 收藏</button>
+            <button class="card-btn"><i class="fas fa-pen"></i> 使用</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 移动端折叠卡片 -->
+    <div class="mobile-cards">
+      <!-- 折叠卡片示例 -->
+      <div class="collapsible-card">
+        <div class="collapsible-header">
+          <h3 class="card-title">诡秘修仙:唯一修真者的成神路</h3>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="collapsible-content">
+          <div class="card-image" style="background-image: url('1740858477618.png')"></div>
+          <div class="card-content">
+            <p class="card-description">现代社畜陈玄穿越修仙界苦修五百年成就化神，飞升雷劫中竟坠入诡秘世界。身怀《太虚混沌诀》与储物戒中囤积的仙丹法宝，发现此界非凡特性竟与修仙体系相互克制。</p>
+            <div class="card-tags">
+              <span class="card-tag">诡秘同人</span>
+              <span class="card-tag">跨界二穿</span>
+              <span class="card-tag">仙侠</span>
+            </div>
+            <div class="card-actions">
+              <button class="card-btn"><i class="far fa-star"></i> 收藏</button>
+              <button class="card-btn"><i class="fas fa-pen"></i> 使用</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="collapsible-card">
+        <div class="collapsible-header">
+          <h3 class="card-title">让十年老兵穿进病娇游戏求生</h3>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="collapsible-content">
+          <div class="card-image" style="background-image: url('2.png')"></div>
+          <div class="card-content">
+            <p class="card-description">李明因使用修改器开挂，将某病娇游戏的女主好感全部改为【9999+】本以为会就此通关，然而却引发了穿越事件。他发现自己身处《驯妃风云录》游戏世界，面对五位病娇师姐的恐怖追求。</p>
+            <div class="card-tags">
+              <span class="card-tag">多美女</span>
+              <span class="card-tag">病娇</span>
+              <span class="card-tag">仙侠</span>
+            </div>
+            <div class="card-actions">
+              <button class="card-btn"><i class="far fa-star"></i> 收藏</button>
+              <button class="card-btn"><i class="fas fa-pen"></i> 使用</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分页控件 -->
+    <div class="pagination">
+      <button class="pagination-btn"><i class="fas fa-angle-left"></i></button>
+      <button class="pagination-btn active">1</button>
+      <button class="pagination-btn">2</button>
+      <button class="pagination-btn">3</button>
+      <button class="pagination-btn"><i class="fas fa-angle-right"></i></button>
+    </div>
+  </main>
+
+  <footer>
+    <nav class="footer-nav">
+      <a href="index.html">
+        <i class="fas fa-home"></i>
+        首页
+      </a>
+      <a href="#">
+        <i class="fas fa-user-edit"></i>
+        创作
+      </a>
+      <a href="admin.html">
+        <i class="fas fa-chart-line"></i>
+        模型
+      </a>
+    </nav>
+  </footer>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <script>
+    // 全局变量
+    let selectedTags = [];
+    let chapterItems = [];
+    let selectedInspirations = [];
+    let inspirationTags = [];
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化标签点击事件
+      initializeTags();
+      
+      // 加载灵感数据
+      loadInspirationData();
+      
+      // 初始化卡片折叠功能
+      initializeCardToggle();
+      
+      // 初始化灵感搜索功能
+      initializeSearch();
+      
+      // 初始化现有章节的上下行按钮
+      initializeExistingChapterButtons();
+    });
+    
+    // 初始化已有章节按钮
+    function initializeExistingChapterButtons() {
+      const chapterItems = document.querySelectorAll('.chapter-item');
+      chapterItems.forEach(item => {
+        const upButton = item.querySelector('.nav-button:first-child');
+        const downButton = item.querySelector('.nav-button:last-child');
+        const contentTextarea = item.querySelector('.chapter-content');
+        
+        upButton.addEventListener('click', function() {
+          contentTextarea.value += "【情绪向上行】";
+        });
+        
+        downButton.addEventListener('click', function() {
+          contentTextarea.value += "【情绪向下行】";
+        });
+      });
+      
+      updateChapterItems();
+    }
+
+    // 初始化卡片折叠功能
+    function initializeCardToggle() {
+      const cardHeaders = document.querySelectorAll('.card-header');
+      const cardToggles = document.querySelectorAll('.card-toggle');
+      
+      cardHeaders.forEach(header => {
+        header.addEventListener('click', function(e) {
+          // 确保只有在移动设备视图下才响应点击事件
+          if (window.innerWidth <= 768 && !e.target.classList.contains('fa-times')) {
+            const card = this.closest('.creation-card');
+            card.classList.toggle('card-collapsed');
+            
+            const toggle = this.querySelector('.card-toggle i');
+            if (card.classList.contains('card-collapsed')) {
+              toggle.classList.remove('fa-chevron-down');
+              toggle.classList.add('fa-chevron-up');
+            } else {
+              toggle.classList.remove('fa-chevron-up');
+              toggle.classList.add('fa-chevron-down');
+            }
+          }
+        });
+      });
+      
+      cardToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const card = this.closest('.creation-card');
+          card.classList.toggle('card-collapsed');
+          
+          const icon = this.querySelector('i');
+          if (card.classList.contains('card-collapsed')) {
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+          } else {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+          }
+        });
+      });
+    }
+
+    // 初始化灵感搜索功能
+    function initializeSearch() {
+      const searchInput = document.getElementById('inspiration-search');
+      
+      searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        filterInspirations(searchTerm);
+      });
+      
+      // 提取所有灵感标签并展示
+      extractAndDisplayTags();
+    }
+    
+    // 提取并显示所有灵感标签
+    function extractAndDisplayTags() {
+      const inspirationData = JSON.parse(localStorage.getItem('inspirationData')) || [];
+      const tagsContainer = document.getElementById('inspiration-tags');
+      const allTags = new Set();
+      
+      // 收集所有不重复的标签
+      inspirationData.forEach(inspiration => {
+        if (inspiration.tags && Array.isArray(inspiration.tags)) {
+          inspiration.tags.forEach(tag => allTags.add(tag));
+        }
+      });
+      
+      inspirationTags = Array.from(allTags);
+      
+      // 显示标签
+      tagsContainer.innerHTML = '';
+      inspirationTags.forEach(tag => {
+        const tagElement = document.createElement('span');
+        tagElement.classList.add('inspiration-tag');
+        tagElement.textContent = tag;
+        tagElement.addEventListener('click', () => {
+          tagElement.classList.toggle('selected');
+          filterByTags();
+        });
+        tagsContainer.appendChild(tagElement);
+      });
+    }
+    
+    // 按标签筛选灵感
+    function filterByTags() {
+      const selectedTagElements = document.querySelectorAll('.inspiration-tag.selected');
+      const selectedTagNames = Array.from(selectedTagElements).map(el => el.textContent);
+      
+      const searchInput = document.getElementById('inspiration-search');
+      const searchTerm = searchInput.value.toLowerCase();
+      
+      // 同时按搜索词和标签筛选
+      filterInspirations(searchTerm, selectedTagNames);
+    }
+    
+    // 筛选灵感
+    function filterInspirations(searchTerm = '', tagFilter = []) {
+      const inspirationData = JSON.parse(localStorage.getItem('inspirationData')) || [];
+      const inspirationList = document.getElementById('inspiration-list');
+      
+      inspirationList.innerHTML = '';
+      
+      let filteredInspirations = inspirationData;
+      
+      // 按搜索词筛选
+      if (searchTerm) {
+        filteredInspirations = filteredInspirations.filter(inspiration => 
+          inspiration.title.toLowerCase().includes(searchTerm) || 
+          inspiration.description.toLowerCase().includes(searchTerm)
+        );
+      }
+      
+      // 按标签筛选
+
+      inspirationData.forEach(inspiration => {
+        const inspirationItem = document.createElement('div');
+        inspirationItem.classList.add('inspiration-item');
+        inspirationItem.innerHTML = `
+          <h3>${inspiration.title}</h3>
+          <p>${inspiration.description}</p>
+          <div class="tags">
+            ${inspiration.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+          </div>
+        `;
+        inspirationItem.addEventListener('click', () => toggleInspiration(inspiration));
+        inspirationList.appendChild(inspirationItem);
+      });
+    }
+
+    // 添加章节条目
+    function addChapterItem() {
+      const chapterList = document.getElementById('chapter-list');
+      const itemNumber = chapterList.children.length + 1;
+      
+      const chapterItem = document.createElement('div');
+      chapterItem.classList.add('chapter-item');
+      chapterItem.innerHTML = `
+        <div class="chapter-controls">
+          <select class="chapter-number">
+            <option>第1阶段</option>
+            <option>第2阶段</option>
+            <option>第3阶段</option>
+            <option>第4阶段</option>
+            <option>第5阶段</option>
+          </select>
+          <textarea class="chapter-content" placeholder="输入阶段内容"></textarea>
+        </div>
+        <div class="button-group">
+          <div class="nav-button">上行</div>
+          <div class="nav-button">下行</div>
+        </div>
+      `;
+      
+      // 设置默认选择的阶段
+      chapterItem.querySelector('.chapter-number').selectedIndex = Math.min(4, itemNumber - 1);
+      
+      chapterList.appendChild(chapterItem);
+      
+      // 为上下行按钮添加事件
+      const upButton = chapterItem.querySelector('.nav-button:first-child');
+      const downButton = chapterItem.querySelector('.nav-button:last-child');
+      
+      upButton.addEventListener('click', function() {
+        const contentTextarea = chapterItem.querySelector('.chapter-content');
+        contentTextarea.value += "【情绪向上行】";
+      });
+      
+      downButton.addEventListener('click', function() {
+        const contentTextarea = chapterItem.querySelector('.chapter-content');
+        contentTextarea.value += "【情绪向下行】";
+      });
+      
+      updateChapterItems();
+    }
+
+    // 更新章节项
+    function updateChapterItems() {
+      const items = document.querySelectorAll('.chapter-item');
+      chapterItems = Array.from(items).map((item) => {
+        const select = item.querySelector('.chapter-number');
+        const textarea = item.querySelector('.chapter-content');
+        return {
+          stage: select.options[select.selectedIndex].text,
+          content: textarea.value
+        };
+      });
+    }
+
+    // 切换灵感选择
+    function toggleInspiration(inspiration) {
+      const index = selectedInspirations.findIndex(item => item.id === inspiration.id);
+      if (index === -1) {
+        selectedInspirations.push(inspiration);
+      } else {
+        selectedInspirations.splice(index, 1);
+      }
+      
+      // 更新 UI
+      const inspirationItems = document.querySelectorAll('.inspiration-item');
+      inspirationItems.forEach(item => {
+        if (item.querySelector('h3').textContent === inspiration.title) {
+          item.classList.toggle('selected');
+        }
+      });
+    }
+
+    // 生成故事开头
+    function generateStoryPrompt() {
+      // 更新章节内容
+      updateChapterItems();
+      
+      const storyBeginning = document.getElementById('story-beginning').value;
+      const storyDevelopment = document.getElementById('story-development').value;
+      const storyTurn = document.getElementById('story-turn').value;
+      const storyConclusion = document.getElementById('story-conclusion').value;
+      const mainCharacter = document.getElementById('main-character').value;
+      
+      let prompt = '你是一位精通故事创作的AI，请根据以下内容创建一个小说的开头部分：\n\n';
+      
+      // 添加故事结构
+      prompt += '## 故事架构\n';
+      prompt += `起：${storyBeginning || '未设定'}\n`;
+      prompt += `承：${storyDevelopment || '未设定'}\n`;
+      prompt += `转：${storyTurn || '未设定'}\n`;
+      prompt += `合：${storyConclusion || '未设定'}\n\n`;
+      
+      // 添加主角信息
+      prompt += '## 主角设定\n';
+      prompt += `主角名称：${mainCharacter || '未设定'}\n\n`;
+      
+      // 添加核心元素
+      if (selectedTags.length > 0) {
+        prompt += '## 核心元素\n';
+        prompt += selectedTags.join('、');
+        prompt += '\n\n';
+      }
+      
+      // 添加副情节阶段
+      if (chapterItems.length > 0) {
+        prompt += '## 章节大纲\n';
+        chapterItems.forEach(item => {
+          if (item.content) {
+            prompt += `${item.stage}：${item.content}\n`;
+          }
+        });
+        prompt += '\n';
+      }
+      
+      // 特别说明
+      prompt += '特别说明：章节大纲是指一章之内出现的剧情，不是整个小说的不同章节，请根据此理解创作合适的开头。\n\n';
+      
+      // 添加要求
+      prompt += '请创作出符合上述设定的小说开头（不少于1000字）。开头应该引人入胜，建立故事背景并介绍主要角色。按照章节大纲的内容创作，注意情绪的走向（上行/下行）。';
+      
+      document.getElementById('prompt-output').value = prompt;
+    }
+
+    // 生成提示词
+    function generatePrompt() {
+      updateChapterItems();
+      
+      const storyBeginning = document.getElementById('story-beginning').value;
+      const storyDevelopment = document.getElementById('story-development').value;
+      const storyTurn = document.getElementById('story-turn').value;
+      const storyConclusion = document.getElementById('story-conclusion').value;
+      const mainCharacter = document.getElementById('main-character').value;
+      
+      let prompt = '请根据以下大纲和灵感创作一个故事：\n\n';
+      
+      // 添加故事结构
+      prompt += '故事大纲：\n';
+      prompt += `1. 起因：${storyBeginning || '未设定'}\n`;
+      prompt += `2. 经过：${storyDevelopment || '未设定'}\n`;
+      prompt += `3. 高潮：${storyTurn || '未设定'}\n`;
+      prompt += `4. 结果：${storyConclusion || '未设定'}\n\n`;
+      
+      // 添加主角信息
+      prompt += `主角：${mainCharacter || '未设定'}\n\n`;
+      
+      // 添加核心元素
+      if (selectedTags.length > 0) {
+        prompt += '核心元素：';
+        prompt += selectedTags.join('、');
+        prompt += '\n\n';
+      }
+      
+      // 添加副情节阶段
+      if (chapterItems.length > 0) {
+        prompt += '章节剧情（每个阶段代表单章内的剧情发展）：\n';
+        chapterItems.forEach(item => {
+          if (item.content) {
+            prompt += `- ${item.stage}：${item.content}\n`;
+          }
+        });
+        prompt += '\n';
+      }
+      
+      // 添加灵感
+      if (selectedInspirations.length > 0) {
+        prompt += '参考灵感：\n';
+        selectedInspirations.forEach(inspiration => {
+          prompt += `- ${inspiration.title}: ${inspiration.description}\n`;
+        });
+      }
+      
+      document.getElementById('prompt-output').value = prompt;
+    }
+
+    // 清空故事设定
+    function clearStorySettings() {
+      if (confirm('确定要清空所有设定吗？')) {
+        document.getElementById('story-beginning').value = '';
+        document.getElementById('story-development').value = '';
+        document.getElementById('story-turn').value = '';
+        document.getElementById('story-conclusion').value = '';
+        document.getElementById('main-character').value = '';
+        
+        // 清除选中的标签
+        document.querySelectorAll('.tag.selected').forEach(tag => {
+          tag.classList.remove('selected');
+        });
+        selectedTags = [];
+        
+        // 清除章节列表
+        document.getElementById('chapter-list').innerHTML = '';
+        chapterItems = [];
+      }
+    }
+
+    // 复制提示词
+    function copyPrompt() {
+      const promptOutput = document.getElementById('prompt-output');
+      promptOutput.select();
+      document.execCommand('copy');
+      
+      // 显示复制成功提示
+      const btn = event.target.closest('.btn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+      }, 2000);
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      const collapsibleCards = document.querySelectorAll('.collapsible-card');
+      
+      collapsibleCards.forEach(card => {
+        const header = card.querySelector('.collapsible-header');
+        
+        header.addEventListener('click', () => {
+          card.classList.toggle('expanded');
+          
+          // 更新箭头图标
+          const icon = header.querySelector('i');
+          if (card.classList.contains('expanded')) {
+            icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+          } else {
+            icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
